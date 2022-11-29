@@ -13,7 +13,7 @@ func TestAccDeviceDataSource(t *testing.T) {
         Steps: []resource.TestStep{
             // Read testing
             {
-                Config: providerConfig + `data "hwmux_device" "test" {id = "1"}`,
+                Config: providerConfig + `data "hwmux_device" "test" {id = 1}`,
                 Check: resource.ComposeAggregateTestCheckFunc(
                     // Verify the first coffee to ensure all attributes are set
                     resource.TestCheckResourceAttr("data.hwmux_device.test", "sn_or_name", "sn0"),

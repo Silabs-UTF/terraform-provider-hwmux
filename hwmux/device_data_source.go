@@ -2,7 +2,6 @@ package hwmux
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -48,7 +47,7 @@ func (d *deviceDataSource) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diag
 		Attributes: map[string]tfsdk.Attribute{
 			"id": {
 				Description: "The ID of the device.",
-				Type:        types.StringType,
+				Type:        types.Int64Type,
 				Required:    true,
 			},
 			"sn_or_name": {
@@ -87,7 +86,7 @@ func (d *deviceDataSource) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diag
 
 // deviceDataSourceModel maps the data source schema data.
 type deviceDataSourceModel struct {
-	ID         types.String `tfsdk:"id"`
+	ID         types.Int64  `tfsdk:"id"`
 	Sn_or_name types.String `tfsdk:"sn_or_name"`
 	Is_wstk    types.Bool   `tfsdk:"is_wstk"`
 	Uri        types.String `tfsdk:"uri"`
@@ -99,19 +98,18 @@ type deviceDataSourceModel struct {
 // Read refreshes the Terraform state with the latest data.
 func (d *deviceDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state deviceDataSourceModel
-	var id string
+	var id int64
 
 	diags := req.Config.GetAttribute(ctx, path.Root("id"), &id)
 	resp.Diagnostics.Append(diags...)
 
-	idInt, _ := strconv.Atoi(id)
-	device, _, err := GetDevice(d.client, &resp.Diagnostics, int32(idInt))
+	device, _, err := GetDevice(d.client, &resp.Diagnostics, int32(id))
 	if err != nil {
 		return
 	}
 
 	// Map response body to model
-	state.ID = types.StringValue(strconv.Itoa(int(device.GetId())))
+	state.ID = types.Int64Value(int64(device.GetId()))
 	state.Sn_or_name = types.StringValue(device.GetSnOrName())
 	state.Is_wstk = types.BoolValue(device.GetIsWstk())
 	state.Uri = types.StringValue(device.GetUri())

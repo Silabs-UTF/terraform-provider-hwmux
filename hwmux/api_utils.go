@@ -22,6 +22,19 @@ func GetDevice(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32)
 	return
 }
 
+// Get device, err and set error
+func GetDeviceGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
+	deviceGroup *hwmux.DeviceGroup, httpRes *http.Response, err error) {
+	deviceGroup, httpRes, err = client.GroupsApi.GroupsRetrieve(context.Background(), id).Execute()
+	if err != nil {
+		diagnostics.AddError(
+			"Unable to Read DeviceGroup",
+			err.Error(),
+		)
+	}
+	return
+}
+
 // Get Location by device id
 func GetDeviceLocation(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	location *hwmux.Location, httpRes *http.Response, err error) {

@@ -12,7 +12,11 @@ provider "hwmux" {
 }
 
 data "hwmux_device" "sn0" {
-  id = "1"
+  id = 1
+}
+
+data "hwmux_deviceGroup" "testbed1" {
+  id = 1
 }
 
 resource "hwmux_device" "new_device" {
@@ -29,4 +33,8 @@ output "sn0_device" {
 
 output "new_device" {
   value = hwmux_device.new_device
+}
+
+output "testbed1" {
+  value = data.hwmux_deviceGroup.testbed1
 }
