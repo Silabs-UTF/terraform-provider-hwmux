@@ -2,9 +2,7 @@ package hwmux
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"net/http"
+	"strconv"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
@@ -46,39 +44,42 @@ func (d *deviceDataSource) Metadata(_ context.Context, req datasource.MetadataRe
 // GetSchema defines the schema for the data source.
 func (d *deviceDataSource) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
 	return tfsdk.Schema{
+		Description: "Fetches a device from hwmux.",
 		Attributes: map[string]tfsdk.Attribute{
 			"id": {
-				Type:     types.Int64Type,
-				Required: true,
+				Description: "The ID of the device.",
+				Type:        types.StringType,
+				Required:    true,
 			},
 			"sn_or_name": {
-				Type:     types.StringType,
-				Computed: true,
+				Description: "The name of the device. Must be unique.",
+				Type:        types.StringType,
+				Computed:    true,
 			},
 			"is_wstk": {
-				Type:     types.BoolType,
-				Computed: true,
+				Description: "Whether the device is a WSTK.",
+				Type:        types.BoolType,
+				Computed:    true,
 			},
 			"uri": {
-				Type:     types.StringType,
-				Computed: true,
+				Description: "The URI or IP address of the device.",
+				Type:        types.StringType,
+				Computed:    true,
 			},
 			"online": {
-				Type:     types.BoolType,
-				Computed: true,
+				Description: "Whether the device is online.",
+				Type:        types.BoolType,
+				Computed:    true,
 			},
 			"metadata": {
-				Type: types.StringType,
-				Computed: true,
+				Description: "The metadata of the device.",
+				Type:        types.StringType,
+				Computed:    true,
 			},
 			"part": {
-				Computed: true,
-				Attributes: tfsdk.SingleNestedAttributes(map[string]tfsdk.Attribute{
-					"part_no": {
-						Type: types.StringType,
-						Computed: true,
-					},
-				}),
+				Description: "The part number of the device.",
+				Type:        types.StringType,
+				Computed:    true,
 			},
 		},
 	}, nil
@@ -86,64 +87,42 @@ func (d *deviceDataSource) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diag
 
 // deviceDataSourceModel maps the data source schema data.
 type deviceDataSourceModel struct {
-	ID         types.Int64     `tfsdk:"id"`
-	Sn_or_name types.String    `tfsdk:"sn_or_name"`
-	Is_wstk    types.Bool      `tfsdk:"is_wstk"`
-	Uri        types.String    `tfsdk:"uri"`
-	Online     types.Bool      `tfsdk:"online"`
-	Metadata   types.String	   `tfsdk:"metadata"`
-	Part       devicePartModel `tfsdk:"part"`
-}
-
-// devicePartModel maps device ingredients data
-type devicePartModel struct {
-	Part_no types.String `tfsdk:"part_no"`
+	ID         types.String `tfsdk:"id"`
+	Sn_or_name types.String `tfsdk:"sn_or_name"`
+	Is_wstk    types.Bool   `tfsdk:"is_wstk"`
+	Uri        types.String `tfsdk:"uri"`
+	Online     types.Bool   `tfsdk:"online"`
+	Metadata   types.String `tfsdk:"metadata"`
+	Part       types.String `tfsdk:"part"`
 }
 
 // Read refreshes the Terraform state with the latest data.
 func (d *deviceDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
 	var state deviceDataSourceModel
-	var id int32
-	
+	var id string
+
 	diags := req.Config.GetAttribute(ctx, path.Root("id"), &id)
 	resp.Diagnostics.Append(diags...)
 
-	device, api_response, err := d.client.DevicesApi.DevicesRetrieve(context.Background(), id).Execute()
+	idInt, _ := strconv.Atoi(id)
+	device, _, err := GetDevice(d.client, &resp.Diagnostics, int32(idInt))
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to Read Device",
-			err.Error(),
-		)
-		return
-	}
-	if api_response.StatusCode != http.StatusOK {
-		resp.Diagnostics.AddError(
-			fmt.Sprintf("Api response code: %d", api_response.StatusCode),
-			err.Error(),
-		)
 		return
 	}
 
 	// Map response body to model
-	state.ID = types.Int64Value(int64(device.Id))
+	state.ID = types.StringValue(strconv.Itoa(int(device.GetId())))
 	state.Sn_or_name = types.StringValue(device.GetSnOrName())
 	state.Is_wstk = types.BoolValue(device.GetIsWstk())
 	state.Uri = types.StringValue(device.GetUri())
 	state.Online = types.BoolValue(device.GetOnline())
 
-	metadataJson, err := json.Marshal(device.GetMetadata())
+	err = MarshalMetadataSetError(device.GetMetadata(), &resp.Diagnostics, "device", &state.Metadata)
 	if err != nil {
-		resp.Diagnostics.AddError(
-			"Unable to get device metadata",
-			err.Error(),
-		)
 		return
 	}
-	state.Metadata = types.StringValue(string(metadataJson))
 
-	state.Part = devicePartModel{
-		Part_no: types.StringValue(device.Part.GetPartNo()),
-	}
+	state.Part = types.StringValue(device.Part.GetPartNo())
 
 	// Set state
 	diags = resp.State.Set(ctx, &state)

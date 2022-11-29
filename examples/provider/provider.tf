@@ -1,3 +1,4 @@
-provider "scaffolding" {
-  # example configuration here
+provider "hwmux" {
+  host  = "http://hwmux.example.com"
+  token = "my-API-token"
 }

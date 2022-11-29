@@ -43,15 +43,18 @@ type hwmuxProviderModel struct {
 // GetSchema defines the provider-level schema for configuration data.
 func (p *hwmuxProvider) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
 	return tfsdk.Schema{
+		Description: "Interact with Hwmux.",
 		Attributes: map[string]tfsdk.Attribute{
 			"host": {
-				Type:     types.StringType,
-				Optional: true,
+				Description: "URI to Hwmux API. May also be provided via HWMUX_HOST environment variable. No trailing slash required.",
+				Type:        types.StringType,
+				Optional:    true,
 			},
 			"token": {
-				Type:     types.StringType,
-				Optional: true,
-				Sensitive: true,
+				Description: "The Hwmux API token. May also be provided via HWMUX_TOKEN environment variable.",
+				Type:        types.StringType,
+				Optional:    true,
+				Sensitive:   true,
 			},
 		},
 	}, nil
@@ -136,14 +139,14 @@ func (p *hwmuxProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	}
 
 	ctx = tflog.SetField(ctx, "hwmux_host", host)
-    ctx = tflog.SetField(ctx, "hwmux_token", token)
+	ctx = tflog.SetField(ctx, "hwmux_token", token)
 	ctx = tflog.MaskFieldValuesWithFieldKeys(ctx, "hwmux_token")
 
-    tflog.Debug(ctx, "Creating Hwmux client")
+	tflog.Debug(ctx, "Creating Hwmux client")
 
 	// Create a new hwmux client using the configuration values
 	clientConfig := hwmux.NewConfiguration()
-	clientConfig.AddDefaultHeader("Authorization", "Token " + token)
+	clientConfig.AddDefaultHeader("Authorization", "Token "+token)
 	clientConfig.Servers = hwmux.ServerConfigurations{hwmux.ServerConfiguration{URL: host}}
 	client := hwmux.NewAPIClient(clientConfig)
 
@@ -164,5 +167,7 @@ func (p *hwmuxProvider) DataSources(_ context.Context) []func() datasource.DataS
 
 // Resources defines the resources implemented in the provider.
 func (p *hwmuxProvider) Resources(_ context.Context) []func() resource.Resource {
-	return nil
+	return []func() resource.Resource{
+		NewDeviceResource,
+	}
 }
