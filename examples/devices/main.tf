@@ -27,6 +27,13 @@ resource "hwmux_device" "new_device" {
   metadata   = jsonencode(yamldecode(file("example.yaml")))
 }
 
+resource "hwmux_deviceGroup" "new_testbed" {
+  name              = "new_testbed"
+  metadata          = jsonencode(yamldecode(file("example.yaml")))
+  devices           = [hwmux_device.new_device.id, data.hwmux_device.sn0.id]
+  permission_groups = ["All users"]
+}
+
 output "sn0_device" {
   value = data.hwmux_device.sn0
 }
@@ -37,4 +44,8 @@ output "new_device" {
 
 output "testbed1" {
   value = data.hwmux_deviceGroup.testbed1
+}
+
+output "new_testbed" {
+  value = hwmux_deviceGroup.new_testbed
 }

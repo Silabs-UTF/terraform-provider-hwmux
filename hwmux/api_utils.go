@@ -47,3 +47,11 @@ func GetDeviceLocation(client *hwmux.APIClient, diagnostics *diag.Diagnostics, i
 	}
 	return
 }
+
+// Get permission groups for a given deviceGroup
+func GetPermissionGroupsForDeviceGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
+	[]string, error) {
+	var permissionGroups []string
+	// TODO: Implement once API is available
+	return permissionGroups, nil
+}

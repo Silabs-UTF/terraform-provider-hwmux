@@ -17,7 +17,7 @@ Fetches a device from hwmux.
 
 ### Required
 
-- `id` (String) The ID of the device.
+- `id` (Number) The ID of the device.
 
 ### Read-Only
 

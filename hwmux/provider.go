@@ -170,5 +170,6 @@ func (p *hwmuxProvider) DataSources(_ context.Context) []func() datasource.DataS
 func (p *hwmuxProvider) Resources(_ context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewDeviceResource,
+		NewDeviceGroupResource,
 	}
 }
