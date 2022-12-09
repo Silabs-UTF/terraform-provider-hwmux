@@ -612,3 +612,5 @@ rsc.io/quote/v3 v3.1.0/go.mod h1:yEA65RcK8LyAZtP9Kv3t0HmxON59tX3rD+tICJqUlj0=
 rsc.io/sampler v1.3.0/go.mod h1:T1hPZKmBbMNahiBKFy5HrXp6adAjACjK9JXDnKaTXpA=
 stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221108202336-bda8b12b940b h1:iGpqsILrcKKvEsJX3wAt7aBEuPzWsARwNVoTZPZgOCY=
 stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221108202336-bda8b12b940b/go.mod h1:zA8QyysA8N+nfcKk/qZYnQ6488Q6kPEqF3HNXchdacU=
+stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221207215525-7abe4d325347 h1:fSxdCHrCpTTuGh0Ixi2ag0OQaD7PbW41LgbCcSlQQeM=
+stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221207215525-7abe4d325347/go.mod h1:zA8QyysA8N+nfcKk/qZYnQ6488Q6kPEqF3HNXchdacU=

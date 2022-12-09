@@ -19,6 +19,10 @@ data "hwmux_deviceGroup" "testbed1" {
   id = 1
 }
 
+data "hwmux_label" "label1" {
+  id = 1
+}
+
 resource "hwmux_device" "new_device" {
   sn_or_name = "new device"
   uri        = "99.9.9.1"
@@ -48,4 +52,8 @@ output "testbed1" {
 
 output "new_testbed" {
   value = hwmux_deviceGroup.new_testbed
+}
+
+output "label1" {
+  value = data.hwmux_label.label1
 }

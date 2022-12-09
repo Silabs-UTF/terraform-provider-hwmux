@@ -31,12 +31,12 @@ type deviceGroupResource struct {
 }
 
 type deviceGroupResourceModel struct {
-	ID               types.String                 `tfsdk:"id"`
-	Name             types.String                 `tfsdk:"name"`
-	Metadata         types.String                 `tfsdk:"metadata"`
-	Devices          []types.Int64   `tfsdk:"devices"`
+	ID               types.String   `tfsdk:"id"`
+	Name             types.String   `tfsdk:"name"`
+	Metadata         types.String   `tfsdk:"metadata"`
+	Devices          []types.Int64  `tfsdk:"devices"`
 	PermissionGroups []types.String `tfsdk:"permission_groups"`
-	LastUpdated      types.String                 `tfsdk:"last_updated"`
+	LastUpdated      types.String   `tfsdk:"last_updated"`
 }
 
 // Configure adds the provider configured client to the resource.
@@ -132,7 +132,7 @@ func (r *deviceGroupResource) Create(ctx context.Context, req resource.CreateReq
 
 	// Map response body to schema and populate Computed attribute values
 	// set model based on response
-	err = updateDGModelFromResponse(deviceGroupSerializer, &plan, &resp.Diagnostics)
+	err = updateDGModelFromResponse(deviceGroupSerializer, &plan, &resp.Diagnostics, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Updating the deviceGroup model failed", err.Error(),
@@ -173,12 +173,19 @@ func (r *deviceGroupResource) Read(ctx context.Context, req resource.ReadRequest
 		return
 	}
 
-	state.Devices = []types.Int64{}
-	for _, device := range deviceGroup.GetDevices() {
-		state.Devices = append(state.Devices, types.Int64Value(int64(device.GetId())))
+	state.Devices = make([]types.Int64, len(deviceGroup.GetDevices()))
+	for i, device := range deviceGroup.GetDevices() {
+		state.Devices[i] = types.Int64Value(int64(device.GetId()))
 	}
 
-	// TODO: implement permission groups Read once API is available
+	permissionGroups, err := GetPermissionGroupsForDeviceGroup(r.client, &resp.Diagnostics, deviceGroup.GetId())
+	if err != nil {
+		return
+	}
+	state.PermissionGroups = make([]types.String, len(permissionGroups))
+	for i, aGroup := range permissionGroups {
+		state.PermissionGroups[i] = types.StringValue(aGroup)
+	}
 
 	// Set state
 	diags = resp.State.Set(ctx, &state)
@@ -219,7 +226,7 @@ func (r *deviceGroupResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// set model based on response
-	err = updateDGModelFromResponse(deviceGroupSerializer, &plan, &resp.Diagnostics)
+	err = updateDGModelFromResponse(deviceGroupSerializer, &plan, &resp.Diagnostics, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Updating the deviceGroup model failed", err.Error(),
@@ -265,7 +272,7 @@ func (r *deviceGroupResource) ImportState(ctx context.Context, req resource.Impo
 func createDeviceGroupFromPlan(plan *deviceGroupResourceModel, diagnostics *diag.Diagnostics) (*hwmux.DeviceGroupSerializerWithDevicePk, error) {
 	deviceGroupSerializer := hwmux.NewDeviceGroupSerializerWithDevicePkWithDefaults()
 	deviceGroupSerializer.SetName(plan.Name.ValueString())
-	
+
 	if !plan.Metadata.IsUnknown() {
 		metadata, errorMet := UnmarshalMetadataSetError(plan.Metadata.ValueString(), diagnostics, "deviceGroup")
 		if errorMet != nil {
@@ -274,16 +281,16 @@ func createDeviceGroupFromPlan(plan *deviceGroupResourceModel, diagnostics *diag
 		deviceGroupSerializer.SetMetadata(*metadata)
 	}
 
-	deviceIds := []int32{}
-	for _, device := range plan.Devices {
-		deviceIds = append(deviceIds, int32(device.ValueInt64()))
+	deviceIds := make([]int32, len(plan.Devices))
+	for i, device := range plan.Devices {
+		deviceIds[i] = int32(device.ValueInt64())
 	}
 
 	deviceGroupSerializer.SetDevices(deviceIds)
-	
-	permissionList := []string{}
-	for _, permissionGroup := range plan.PermissionGroups {
-		permissionList = append(permissionList, permissionGroup.ValueString())
+
+	permissionList := make([]string, len(plan.PermissionGroups))
+	for i, permissionGroup := range plan.PermissionGroups {
+		permissionList[i] = permissionGroup.ValueString()
 	}
 
 	deviceGroupSerializer.SetPermissionGroups(permissionList)
@@ -292,7 +299,7 @@ func createDeviceGroupFromPlan(plan *deviceGroupResourceModel, diagnostics *diag
 }
 
 // Map response body to model and populate Computed attribute values
-func updateDGModelFromResponse(deviceGroup *hwmux.DeviceGroupSerializerWithDevicePk, plan *deviceGroupResourceModel, diagnostics *diag.Diagnostics) (err error) {
+func updateDGModelFromResponse(deviceGroup *hwmux.DeviceGroupSerializerWithDevicePk, plan *deviceGroupResourceModel, diagnostics *diag.Diagnostics, client *hwmux.APIClient) (err error) {
 	// Map response body to schema and populate Computed attribute values
 	plan.ID = types.StringValue(strconv.Itoa(int(deviceGroup.GetId())))
 	plan.Name = types.StringValue(deviceGroup.GetName())
@@ -302,12 +309,19 @@ func updateDGModelFromResponse(deviceGroup *hwmux.DeviceGroupSerializerWithDevic
 		return
 	}
 
-	plan.Devices = []types.Int64{}
-	for _, device := range deviceGroup.GetDevices() {
-		plan.Devices = append(plan.Devices, types.Int64Value(int64(device)))
+	plan.Devices = make([]types.Int64, len(deviceGroup.GetDevices()))
+	for i, device := range deviceGroup.GetDevices() {
+		plan.Devices[i] = types.Int64Value(int64(device))
 	}
 
-	// TODO: Implement device group read when available
+	permissionGroups, err := GetPermissionGroupsForDeviceGroup(client, diagnostics, deviceGroup.GetId())
+	if err != nil {
+		return
+	}
+	plan.PermissionGroups = make([]types.String, len(permissionGroups))
+	for i, aGroup := range permissionGroups {
+		plan.PermissionGroups[i] = types.StringValue(aGroup)
+	}
 
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 

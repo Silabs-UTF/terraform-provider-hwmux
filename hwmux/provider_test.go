@@ -10,7 +10,7 @@ const (
 	providerConfig = `
 provider "hwmux" {
   host  = "http://localhost"
-  token = "cd48869f98f4eca6eb3bda542f5ac808e4beabc4"
+  token = "6cbeb43325c187390ec505d3fff1d8488bfb806a"
 }
 `
 )

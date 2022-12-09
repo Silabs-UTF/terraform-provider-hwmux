@@ -163,6 +163,7 @@ func (p *hwmuxProvider) DataSources(_ context.Context) []func() datasource.DataS
 	return []func() datasource.DataSource{
 		NewDeviceDataSource,
 		NewDeviceGroupDataSource,
+		NewLabelDataSource,
 	}
 }
 

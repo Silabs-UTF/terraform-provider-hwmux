@@ -15,21 +15,16 @@ func TestAccDeviceGroupResource(t *testing.T) {
                 Config: providerConfig + `
 resource "hwmux_deviceGroup" "test" {
 	name     = "test_dg"
-	devices = [
-		{ id = 1 },
-		{ id = 2 },
-	]
-	permission_groups = [
-		{ name = "All users" },
-	]
+	devices = [1, 2]
+	permission_groups = ["All users"]
 }
 `,
                 Check: resource.ComposeAggregateTestCheckFunc(
                     resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "name", "test_dg"),
 					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "devices.#", "2"),
-					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "devices.0.id", "1"),
+					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "devices.0", "1"),
 					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "permission_groups.#", "1"),
-					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "permission_groups.0.name", "All users"),
+					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "permission_groups.0", "All users"),
                     // Verify the deviceGroup item has Computed attributes filled.
                     resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "metadata", "{}"),
                     // Verify dynamic values have any value set in the state.
@@ -51,20 +46,16 @@ resource "hwmux_deviceGroup" "test" {
                 Config: providerConfig + `
 resource "hwmux_deviceGroup" "test" {
 	name     = "test_dg"
-	devices = [
-		{ id = 1 },
-	]
-	permission_groups = [
-		{ name = "Staff users" },
-	]
+	devices = [1]
+	permission_groups = ["Staff users"]
 }
 `,
                 Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "name", "test_dg"),
 					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "devices.#", "1"),
-					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "devices.0.id", "1"),
+					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "devices.0", "1"),
 					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "permission_groups.#", "1"),
-					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "permission_groups.0.name", "Staff users"),
+					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "permission_groups.0", "Staff users"),
                     // Verify the deviceGroup item has Computed attributes filled.
                     resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "metadata", "{}"),
                 ),

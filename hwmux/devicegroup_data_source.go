@@ -109,8 +109,9 @@ func (d *deviceGroupDataSource) Read(ctx context.Context, req datasource.ReadReq
 		return
 	}
 
-	for _, device := range deviceGroup.GetDevices() {
-		state.Devices = append(state.Devices, nestedDeviceModel{ID: types.Int64Value(int64(device.GetId()))})
+	state.Devices = make([]nestedDeviceModel, len(deviceGroup.GetDevices()))
+	for i, device := range deviceGroup.GetDevices() {
+		state.Devices[i] = nestedDeviceModel{ID: types.Int64Value(int64(device.GetId()))}
 	}
 
 	// Set state
