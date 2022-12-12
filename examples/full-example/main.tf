@@ -8,7 +8,7 @@ terraform {
 
 provider "hwmux" {
   host  = "http://localhost"
-  token = "cd48869f98f4eca6eb3bda542f5ac808e4beabc4"
+  token = "6cbeb43325c187390ec505d3fff1d8488bfb806a"
 }
 
 data "hwmux_device" "sn0" {
@@ -38,6 +38,13 @@ resource "hwmux_deviceGroup" "new_testbed" {
   permission_groups = ["All users"]
 }
 
+resource "hwmux_label" "new_label" {
+  name              = "new_label"
+  metadata          = jsonencode(yamldecode(file("example.yaml")))
+  device_groups     = [hwmux_deviceGroup.new_testbed.id, data.hwmux_deviceGroup.testbed1.id]
+  permission_groups = ["All users"]
+}
+
 output "sn0_device" {
   value = data.hwmux_device.sn0
 }
@@ -56,4 +63,8 @@ output "new_testbed" {
 
 output "label1" {
   value = data.hwmux_label.label1
+}
+
+output "new_label" {
+  value = hwmux_label.new_label
 }

@@ -72,11 +72,32 @@ func GetPermissionGroupsForDeviceGroup(client *hwmux.APIClient, diagnostics *dia
 		)
 		return nil, err
 	}
+	return objectPermsToUGList(objectPerms), nil
+}
+
+
+// Get permission groups for a given Label
+func GetPermissionGroupsForLabel(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
+	[]string, error) {
+	objectPerms, _, err := client.LabelsApi.LabelsPermissionsRetrieve(context.Background(), id).Execute()
+	if err != nil {
+		diagnostics.AddError(
+			"Unable to Read Label Permissions",
+			err.Error(),
+		)
+		return nil, err
+	}
+	return objectPermsToUGList(objectPerms), nil
+}
+
+
+// Returns all user group names from the given object permissions object
+func objectPermsToUGList(objectPerms *hwmux.ObjectPermissions) []string {
 	permissionGroups := make([]string, len(objectPerms.GetUserGroups()))
 	i := 0
 	for key := range objectPerms.GetUserGroups() {
 		permissionGroups[i] = key
 		i++
 	}
-	return permissionGroups, nil
+	return permissionGroups
 }
