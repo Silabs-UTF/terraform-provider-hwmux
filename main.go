@@ -41,7 +41,7 @@ func main() {
 		Debug:   debug,
 	}
 
-	err := providerserver.Serve(context.Background(), hwmux.New, opts)
+	err := providerserver.Serve(context.Background(), hwmux.New(version), opts)
 
 	if err != nil {
 		log.Fatal(err.Error())

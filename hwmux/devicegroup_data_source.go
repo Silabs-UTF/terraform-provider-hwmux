@@ -2,81 +2,27 @@ package hwmux
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"stash.silabs.com/iot_infra_sw/hwmux-client-golang"
 )
 
-// Ensure the implementation satisfies the expected interfaces.
-var (
-	_ datasource.DataSource              = &deviceGroupDataSource{}
-	_ datasource.DataSourceWithConfigure = &deviceGroupDataSource{}
-)
+// Ensure provider defined types fully satisfy framework interfaces
+var _ datasource.DataSource = &DeviceGroupDataSource{}
 
-// NewDeviceGroupDataSource is a helper function to simplify the provider implementation.
 func NewDeviceGroupDataSource() datasource.DataSource {
-	return &deviceGroupDataSource{}
+	return &DeviceGroupDataSource{}
 }
 
-// deviceGroupDataSource is the data source implementation.
-type deviceGroupDataSource struct {
+type DeviceGroupDataSource struct {
 	client *hwmux.APIClient
 }
 
-func (d *deviceGroupDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	d.client = req.ProviderData.(*hwmux.APIClient)
-}
-
-// Metadata returns the data source type name.
-func (d *deviceGroupDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_deviceGroup"
-}
-
-// GetSchema defines the schema for the data source.
-func (d *deviceGroupDataSource) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
-	return tfsdk.Schema{
-		Description: "Fetches a deviceGroup from hwmux.",
-		Attributes: map[string]tfsdk.Attribute{
-			"id": {
-				Description: "The ID of the deviceGroup.",
-				Type:        types.Int64Type,
-				Required:    true,
-			},
-			"name": {
-				Description: "The name of the deviceGroup. Must be unique.",
-				Type:        types.StringType,
-				Computed:    true,
-			},
-			"metadata": {
-				Description: "The metadata of the deviceGroup.",
-				Type:        types.StringType,
-				Computed:    true,
-			},
-			"devices": {
-				Description: "The devices that belong to the deviceGroup.",
-				Computed:    true,
-				Attributes: tfsdk.ListNestedAttributes(map[string]tfsdk.Attribute{
-					"id": {
-						Description: "The ID of the device.",
-						Type:        types.Int64Type,
-						Computed:    true,
-					},
-				}),
-			},
-		},
-	}, nil
-}
-
 // deviceGroupDataSourceModel maps the data source schema data.
-type deviceGroupDataSourceModel struct {
+type DeviceGroupDataSourceModel struct {
 	ID       types.Int64         `tfsdk:"id"`
 	Name     types.String        `tfsdk:"name"`
 	Devices  []nestedDeviceModel `tfsdk:"devices"`
@@ -87,37 +33,94 @@ type nestedDeviceModel struct {
 	ID types.Int64 `tfsdk:"id"`
 }
 
-// Read refreshes the Terraform state with the latest data.
-func (d *deviceGroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state deviceGroupDataSourceModel
-	var id int64
 
-	diags := req.Config.GetAttribute(ctx, path.Root("id"), &id)
-	resp.Diagnostics.Append(diags...)
+func (d *DeviceGroupDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_device_group"
+}
 
-	deviceGroup, _, err := GetDeviceGroup(d.client, &resp.Diagnostics, int32(id))
+func (d *DeviceGroupDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		// This description is used by the documentation generator and the language server.
+		MarkdownDescription: "DeviceGroup data source",
+
+		Attributes: map[string]schema.Attribute{
+			"id": schema.Int64Attribute{
+				MarkdownDescription: "Device Group identifier",
+				Required:            true,
+			},
+			"name": schema.StringAttribute{
+				MarkdownDescription: "Device Group name. Must be unique.",
+				Computed:            true,
+			},
+			"metadata": schema.StringAttribute{
+				MarkdownDescription: "The metadata of the Device Group.",
+				Computed: true,
+			},
+			"devices": schema.ListNestedAttribute{
+				MarkdownDescription: "The devices that belong to the Device Group",
+				Computed: true,
+				NestedObject: schema.NestedAttributeObject{
+					Attributes: map[string]schema.Attribute{
+						"id": schema.Int64Attribute{
+							MarkdownDescription: "Device ID.",
+							Computed: true,
+						},
+					},
+				},
+			},
+		},
+	}
+}
+
+func (d *DeviceGroupDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	// Prevent panic if the provider has not been configured.
+	if req.ProviderData == nil {
+		return
+	}
+
+	client, ok := req.ProviderData.(*hwmux.APIClient)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Data Source Configure Type",
+			fmt.Sprintf("Expected *hwmux.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	d.client = client
+}
+
+func (d *DeviceGroupDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data DeviceGroupDataSourceModel
+
+	// Read Terraform configuration data into the model
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
+	if resp.Diagnostics.HasError() {
+		return
+	}
+
+	deviceGroup, _, err := GetDeviceGroup(d.client, &resp.Diagnostics, int32(data.ID.ValueInt64()))
 	if err != nil {
 		return
 	}
 
 	// Map response body to model
-	state.ID = types.Int64Value(int64(deviceGroup.GetId()))
-	state.Name = types.StringValue(deviceGroup.GetName())
+	data.ID = types.Int64Value(int64(deviceGroup.GetId()))
+	data.Name = types.StringValue(deviceGroup.GetName())
 
-	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), &resp.Diagnostics, "deviceGroup", &state.Metadata)
+	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), &resp.Diagnostics, "deviceGroup", &data.Metadata)
 	if err != nil {
 		return
 	}
 
-	state.Devices = make([]nestedDeviceModel, len(deviceGroup.GetDevices()))
+	data.Devices = make([]nestedDeviceModel, len(deviceGroup.GetDevices()))
 	for i, device := range deviceGroup.GetDevices() {
-		state.Devices[i] = nestedDeviceModel{ID: types.Int64Value(int64(device.GetId()))}
+		data.Devices[i] = nestedDeviceModel{ID: types.Int64Value(int64(device.GetId()))}
 	}
 
-	// Set state
-	diags = resp.State.Set(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// Save data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

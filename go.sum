@@ -192,8 +192,8 @@ github.com/hashicorp/terraform-json v0.14.0 h1:sh9iZ1Y8IFJLx+xQiKHGud6/TSUCM0N8e
 github.com/hashicorp/terraform-json v0.14.0/go.mod h1:5A9HIWPkk4e5aeeXIBbkcOvaZbIYnAIkEyqP2pNSckM=
 github.com/hashicorp/terraform-plugin-docs v0.13.0 h1:6e+VIWsVGb6jYJewfzq2ok2smPzZrt1Wlm9koLeKazY=
 github.com/hashicorp/terraform-plugin-docs v0.13.0/go.mod h1:W0oCmHAjIlTHBbvtppWHe8fLfZ2BznQbuv8+UD8OucQ=
-github.com/hashicorp/terraform-plugin-framework v0.17.0 h1:0KUOY/oe1GPLFqaXnKDnd1rhCrnUtt8pV9wGEwNUFlU=
-github.com/hashicorp/terraform-plugin-framework v0.17.0/go.mod h1:FV97t2BZOARkL7NNlsc/N25c84MyeSSz72uPp7Vq1lg=
+github.com/hashicorp/terraform-plugin-framework v1.0.0 h1:0Mls4TrMTrDysBUby/UmlbcTOMM+n5JBDyB5k+XkGWg=
+github.com/hashicorp/terraform-plugin-framework v1.0.0/go.mod h1:FV97t2BZOARkL7NNlsc/N25c84MyeSSz72uPp7Vq1lg=
 github.com/hashicorp/terraform-plugin-go v0.14.2 h1:rhsVEOGCnY04msNymSvbUsXfRLKh9znXZmHlf5e8mhE=
 github.com/hashicorp/terraform-plugin-go v0.14.2/go.mod h1:Q12UjumPNGiFsZffxOsA40Tlz1WVXt2Evh865Zj0+UA=
 github.com/hashicorp/terraform-plugin-log v0.7.0 h1:SDxJUyT8TwN4l5b5/VkiTIaQgY6R+Y2BQ0sRZftGKQs=
@@ -610,7 +610,5 @@ honnef.co/go/tools v0.0.1-2020.1.4/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9
 rsc.io/binaryregexp v0.2.0/go.mod h1:qTv7/COck+e2FymRvadv62gMdZztPaShugOCi3I+8D8=
 rsc.io/quote/v3 v3.1.0/go.mod h1:yEA65RcK8LyAZtP9Kv3t0HmxON59tX3rD+tICJqUlj0=
 rsc.io/sampler v1.3.0/go.mod h1:T1hPZKmBbMNahiBKFy5HrXp6adAjACjK9JXDnKaTXpA=
-stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221108202336-bda8b12b940b h1:iGpqsILrcKKvEsJX3wAt7aBEuPzWsARwNVoTZPZgOCY=
-stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221108202336-bda8b12b940b/go.mod h1:zA8QyysA8N+nfcKk/qZYnQ6488Q6kPEqF3HNXchdacU=
-stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221207215525-7abe4d325347 h1:fSxdCHrCpTTuGh0Ixi2ag0OQaD7PbW41LgbCcSlQQeM=
-stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221207215525-7abe4d325347/go.mod h1:zA8QyysA8N+nfcKk/qZYnQ6488Q6kPEqF3HNXchdacU=
+stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221213223347-09a620b7e686 h1:fXrKAJU65yMPZhjJS+/lMZgY5iKrIobjaynqPpXmDi8=
+stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221213223347-09a620b7e686/go.mod h1:zA8QyysA8N+nfcKk/qZYnQ6488Q6kPEqF3HNXchdacU=

@@ -3,12 +3,12 @@
 page_title: "hwmux_label Resource - hwmux"
 subcategory: ""
 description: |-
-  Manages a label in hwmux.
+  Label resource
 ---
 
 # hwmux_label (Resource)
 
-Manages a label in hwmux.
+Label resource
 
 ## Example Usage
 
@@ -27,17 +27,17 @@ resource "hwmux_label" "new_label" {
 ### Required
 
 - `device_groups` (Set of Number) The IDs of the deviceGroups that belong to the label.
-- `name` (String) The name of the label. Must be unique.
+- `name` (String) Label name.
 - `permission_groups` (Set of String) Which permission groups can access the resource.
 
 ### Optional
 
-- `metadata` (String) The metadata of the label.
+- `metadata` (String) Label metadata.
 
 ### Read-Only
 
-- `id` (String) The ID of the label.
-- `last_updated` (String) Timestamp of the last Terraform update of the device.
+- `id` (String) Label identifier.
+- `last_updated` (String) Timestamp of the last Terraform update of the resource.
 
 ## Import
 

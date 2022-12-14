@@ -4,11 +4,11 @@ go 1.18
 
 require (
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
-	github.com/hashicorp/terraform-plugin-framework v0.17.0
+	github.com/hashicorp/terraform-plugin-framework v1.0.0
 	github.com/hashicorp/terraform-plugin-go v0.14.2
 	github.com/hashicorp/terraform-plugin-log v0.7.0
 	github.com/hashicorp/terraform-plugin-sdk/v2 v2.24.0
-	stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221207215525-7abe4d325347
+	stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221213223347-09a620b7e686
 )
 
 require (

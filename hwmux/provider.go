@@ -5,77 +5,64 @@ import (
 	"os"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
+	"github.com/hashicorp/terraform-plugin-framework/provider/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-
 	"stash.silabs.com/iot_infra_sw/hwmux-client-golang"
 )
 
-// Ensure the implementation satisfies the expected interfaces
-var (
-	_ provider.Provider = &hwmuxProvider{}
-)
+// Ensure HwmuxProvider satisfies various provider interfaces.
+var _ provider.Provider = &HwmuxProvider{}
 
-// New is a helper function to simplify provider server and testing implementation.
-func New() provider.Provider {
-	return &hwmuxProvider{}
+// HwmuxProvider defines the provider implementation.
+type HwmuxProvider struct {
+	// version is set to the provider version on release, "dev" when the
+	// provider is built and ran locally, and "test" when running acceptance
+	// testing.
+	version string
 }
 
-// hwmuxProvider is the provider implementation.
-type hwmuxProvider struct{}
-
-// Metadata returns the provider type name.
-func (p *hwmuxProvider) Metadata(_ context.Context, _ provider.MetadataRequest, resp *provider.MetadataResponse) {
-	resp.TypeName = "hwmux"
-}
-
-// hwmuxProviderModel maps provider schema data to a Go type.
-type hwmuxProviderModel struct {
+// HwmuxProviderModel describes the provider data model.
+type HwmuxProviderModel struct {
 	Host  types.String `tfsdk:"host"`
 	Token types.String `tfsdk:"token"`
 }
 
-// GetSchema defines the provider-level schema for configuration data.
-func (p *hwmuxProvider) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
-	return tfsdk.Schema{
-		Description: "Interact with Hwmux.",
-		Attributes: map[string]tfsdk.Attribute{
-			"host": {
-				Description: "URI to Hwmux API. May also be provided via HWMUX_HOST environment variable. No trailing slash required.",
-				Type:        types.StringType,
-				Optional:    true,
-			},
-			"token": {
-				Description: "The Hwmux API token. May also be provided via HWMUX_TOKEN environment variable.",
-				Type:        types.StringType,
-				Optional:    true,
-				Sensitive:   true,
-			},
-		},
-	}, nil
+func (p *HwmuxProvider) Metadata(ctx context.Context, req provider.MetadataRequest, resp *provider.MetadataResponse) {
+	resp.TypeName = "hwmux"
+	resp.Version = p.version
 }
 
-// Configure prepares a hwmux API client for data sources and resources.
-func (p *hwmuxProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
-	tflog.Info(ctx, "Configuring Hwmux client")
+func (p *HwmuxProvider) Schema(ctx context.Context, req provider.SchemaRequest, resp *provider.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		MarkdownDescription: "Interact with Hwmux.",
+		Attributes: map[string]schema.Attribute{
+			"host": schema.StringAttribute{
+				MarkdownDescription: "URI to Hwmux API. May also be provided via HWMUX_HOST environment variable. No trailing slash required.",
+				Optional:            true,
+			},
+			"token": schema.StringAttribute{
+				MarkdownDescription: "The Hwmux API token. May also be provided via HWMUX_TOKEN environment variable.",
+				Optional: true,
+				Sensitive: true,
+			},
+		},
+	}
+}
 
-	// Retrieve provider data from configuration
-	var config hwmuxProviderModel
-	diags := req.Config.Get(ctx, &config)
-	resp.Diagnostics.Append(diags...)
+func (p *HwmuxProvider) Configure(ctx context.Context, req provider.ConfigureRequest, resp *provider.ConfigureResponse) {
+	var data HwmuxProviderModel
+
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// If practitioner provided a configuration value for any of the
-	// attributes, it must be a known value.
-
-	if config.Host.IsUnknown() {
+	if data.Host.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("host"),
 			"Unknown hwmux API Host",
@@ -84,7 +71,7 @@ func (p *hwmuxProvider) Configure(ctx context.Context, req provider.ConfigureReq
 		)
 	}
 
-	if config.Token.IsUnknown() {
+	if data.Token.IsUnknown() {
 		resp.Diagnostics.AddAttributeError(
 			path.Root("token"),
 			"Unknown hwmux API token",
@@ -103,12 +90,12 @@ func (p *hwmuxProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	host := os.Getenv("HWMUX_HOST")
 	token := os.Getenv("HWMUX_TOKEN")
 
-	if !config.Host.IsNull() {
-		host = config.Host.ValueString()
+	if !data.Host.IsNull() {
+		host = data.Host.ValueString()
 	}
 
-	if !config.Token.IsNull() {
-		token = config.Token.ValueString()
+	if !data.Token.IsNull() {
+		token = data.Token.ValueString()
 	}
 
 	// If any of the expected configurations are missing, return
@@ -149,29 +136,35 @@ func (p *hwmuxProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	clientConfig.AddDefaultHeader("Authorization", "Token "+token)
 	clientConfig.Servers = hwmux.ServerConfigurations{hwmux.ServerConfiguration{URL: host}}
 	client := hwmux.NewAPIClient(clientConfig)
-
-	// Make the hwmux client available during DataSource and Resource
-	// type Configure methods.
+	
 	resp.DataSourceData = client
 	resp.ResourceData = client
-
-	tflog.Info(ctx, "Configured Hwmux client", map[string]any{"success": true})
 }
 
-// DataSources defines the data sources implemented in the provider.
-func (p *hwmuxProvider) DataSources(_ context.Context) []func() datasource.DataSource {
-	return []func() datasource.DataSource{
-		NewDeviceDataSource,
-		NewDeviceGroupDataSource,
-		NewLabelDataSource,
-	}
-}
-
-// Resources defines the resources implemented in the provider.
-func (p *hwmuxProvider) Resources(_ context.Context) []func() resource.Resource {
+func (p *HwmuxProvider) Resources(ctx context.Context) []func() resource.Resource {
 	return []func() resource.Resource{
 		NewDeviceResource,
 		NewDeviceGroupResource,
 		NewLabelResource,
+		NewPermissionGroupResource,
+	}
+}
+
+func (p *HwmuxProvider) DataSources(ctx context.Context) []func() datasource.DataSource {
+	return []func() datasource.DataSource{
+		NewDeviceDataSource,
+		NewDeviceGroupDataSource,
+		NewLabelDataSource,
+		NewPermissionGroupDataSource,
+		NewPartDataSource,
+		NewRoomDataSource,
+	}
+}
+
+func New(version string) func() provider.Provider {
+	return func() provider.Provider {
+		return &HwmuxProvider{
+			version: version,
+		}
 	}
 }

@@ -2,90 +2,27 @@ package hwmux
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
-	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"stash.silabs.com/iot_infra_sw/hwmux-client-golang"
 )
 
-// Ensure the implementation satisfies the expected interfaces.
-var (
-	_ datasource.DataSource              = &deviceDataSource{}
-	_ datasource.DataSourceWithConfigure = &deviceDataSource{}
-)
+// Ensure provider defined types fully satisfy framework interfaces
+var _ datasource.DataSource = &DeviceDataSource{}
 
-// NewDeviceDataSource is a helper function to simplify the provider implementation.
 func NewDeviceDataSource() datasource.DataSource {
-	return &deviceDataSource{}
+	return &DeviceDataSource{}
 }
 
-// deviceDataSource is the data source implementation.
-type deviceDataSource struct {
+type DeviceDataSource struct {
 	client *hwmux.APIClient
 }
 
-func (d *deviceDataSource) Configure(_ context.Context, req datasource.ConfigureRequest, _ *datasource.ConfigureResponse) {
-	if req.ProviderData == nil {
-		return
-	}
-
-	d.client = req.ProviderData.(*hwmux.APIClient)
-}
-
-// Metadata returns the data source type name.
-func (d *deviceDataSource) Metadata(_ context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_device"
-}
-
-// GetSchema defines the schema for the data source.
-func (d *deviceDataSource) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
-	return tfsdk.Schema{
-		Description: "Fetches a device from hwmux.",
-		Attributes: map[string]tfsdk.Attribute{
-			"id": {
-				Description: "The ID of the device.",
-				Type:        types.Int64Type,
-				Required:    true,
-			},
-			"sn_or_name": {
-				Description: "The name of the device. Must be unique.",
-				Type:        types.StringType,
-				Computed:    true,
-			},
-			"is_wstk": {
-				Description: "Whether the device is a WSTK.",
-				Type:        types.BoolType,
-				Computed:    true,
-			},
-			"uri": {
-				Description: "The URI or IP address of the device.",
-				Type:        types.StringType,
-				Computed:    true,
-			},
-			"online": {
-				Description: "Whether the device is online.",
-				Type:        types.BoolType,
-				Computed:    true,
-			},
-			"metadata": {
-				Description: "The metadata of the device.",
-				Type:        types.StringType,
-				Computed:    true,
-			},
-			"part": {
-				Description: "The part number of the device.",
-				Type:        types.StringType,
-				Computed:    true,
-			},
-		},
-	}, nil
-}
-
 // deviceDataSourceModel maps the data source schema data.
-type deviceDataSourceModel struct {
+type DeviceDataSourceModel struct {
 	ID         types.Int64  `tfsdk:"id"`
 	Sn_or_name types.String `tfsdk:"sn_or_name"`
 	Is_wstk    types.Bool   `tfsdk:"is_wstk"`
@@ -95,37 +32,96 @@ type deviceDataSourceModel struct {
 	Part       types.String `tfsdk:"part"`
 }
 
-// Read refreshes the Terraform state with the latest data.
-func (d *deviceDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
-	var state deviceDataSourceModel
-	var id int64
+func (d *DeviceDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_device"
+}
 
-	diags := req.Config.GetAttribute(ctx, path.Root("id"), &id)
-	resp.Diagnostics.Append(diags...)
+func (d *DeviceDataSource) Schema(ctx context.Context, req datasource.SchemaRequest, resp *datasource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		// This description is used by the documentation generator and the language server.
+		MarkdownDescription: "Device data source",
 
-	device, _, err := GetDevice(d.client, &resp.Diagnostics, int32(id))
-	if err != nil {
+		Attributes: map[string]schema.Attribute{
+			"id": schema.Int64Attribute{
+				MarkdownDescription: "Device identifier",
+				Required:            true,
+			},
+			"sn_or_name": schema.StringAttribute{
+				MarkdownDescription: "Device name. Must be unique.",
+				Computed:            true,
+			},
+			"uri": schema.StringAttribute{
+				MarkdownDescription: "The URI or IP address of the device.",
+				Computed:            true,
+			},
+			"part": schema.StringAttribute{
+				MarkdownDescription: "The part number of the device.",
+				Computed:            true,
+			},
+			"is_wstk": schema.BoolAttribute{
+				MarkdownDescription: "If the device is a WSTK.",
+				Computed: true,
+			},
+			"online": schema.BoolAttribute{
+				MarkdownDescription: "If the device is online.",
+				Computed: true,
+			},
+			"metadata": schema.StringAttribute{
+				MarkdownDescription: "The metadata of the device.",
+				Computed: true,
+			},
+		},
+	}
+}
+
+func (d *DeviceDataSource) Configure(ctx context.Context, req datasource.ConfigureRequest, resp *datasource.ConfigureResponse) {
+	// Prevent panic if the provider has not been configured.
+	if req.ProviderData == nil {
 		return
 	}
 
-	// Map response body to model
-	state.ID = types.Int64Value(int64(device.GetId()))
-	state.Sn_or_name = types.StringValue(device.GetSnOrName())
-	state.Is_wstk = types.BoolValue(device.GetIsWstk())
-	state.Uri = types.StringValue(device.GetUri())
-	state.Online = types.BoolValue(device.GetOnline())
+	client, ok := req.ProviderData.(*hwmux.APIClient)
 
-	err = MarshalMetadataSetError(device.GetMetadata(), &resp.Diagnostics, "device", &state.Metadata)
-	if err != nil {
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Data Source Configure Type",
+			fmt.Sprintf("Expected *hwmux.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
 		return
 	}
 
-	state.Part = types.StringValue(device.Part.GetPartNo())
+	d.client = client
+}
 
-	// Set state
-	diags = resp.State.Set(ctx, &state)
-	resp.Diagnostics.Append(diags...)
+func (d *DeviceDataSource) Read(ctx context.Context, req datasource.ReadRequest, resp *datasource.ReadResponse) {
+	var data DeviceDataSourceModel
+
+	// Read Terraform configuration data into the model
+	resp.Diagnostics.Append(req.Config.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
+
+	device, _, err := GetDevice(d.client, &resp.Diagnostics, int32(data.ID.ValueInt64()))
+	if err != nil {
+		return
+	}
+
+	data.ID = types.Int64Value(int64(device.GetId()))
+	data.Sn_or_name = types.StringValue(device.GetSnOrName())
+	data.Is_wstk = types.BoolValue(device.GetIsWstk())
+	data.Uri = types.StringValue(device.GetUri())
+	data.Online = types.BoolValue(device.GetOnline())
+
+	err = MarshalMetadataSetError(device.GetMetadata(), &resp.Diagnostics, "device", &data.Metadata)
+	if err != nil {
+		return
+	}
+
+	data.Part = types.StringValue(device.Part.GetPartNo())
+
+	// Save data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }

@@ -15,9 +15,6 @@ provider "hwmux" {
 `
 )
 
-var (
-	testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
-        "hwmux": providerserver.NewProtocol6WithError(New()),
-    }
-)
-
+var testAccProtoV6ProviderFactories = map[string]func() (tfprotov6.ProviderServer, error){
+	"hwmux": providerserver.NewProtocol6WithError(New("test")()),
+}

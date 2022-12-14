@@ -2,35 +2,35 @@ package hwmux
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"stash.silabs.com/iot_infra_sw/hwmux-client-golang"
 )
 
-// Ensure the implementation satisfies the expected interfaces.
-var (
-	_ resource.Resource                = &labelResource{}
-	_ resource.ResourceWithConfigure   = &labelResource{}
-	_ resource.ResourceWithImportState = &labelResource{}
-)
+// Ensure provider defined types fully satisfy framework interfaces
+var _ resource.Resource = &LabelResource{}
+var _ resource.ResourceWithImportState = &LabelResource{}
 
-// NewLabelResource is a helper function to simplify the provider implementation.
 func NewLabelResource() resource.Resource {
-	return &labelResource{}
+	return &LabelResource{}
 }
 
-// labelResource is the resource implementation.
-type labelResource struct {
+// LabelResource defines the resource implementation.
+type LabelResource struct {
 	client *hwmux.APIClient
 }
 
-type labelResourceModel struct {
+// LabelResourceModel describes the resource data model.
+type LabelResourceModel struct {
 	ID               types.String   `tfsdk:"id"`
 	Name             types.String   `tfsdk:"name"`
 	Metadata         types.String   `tfsdk:"metadata"`
@@ -39,79 +39,81 @@ type labelResourceModel struct {
 	LastUpdated      types.String   `tfsdk:"last_updated"`
 }
 
-// Configure adds the provider configured client to the resource.
-func (r *labelResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+func (r *LabelResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_label"
+}
+
+func (r *LabelResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		// This description is used by the documentation generator and the language server.
+		MarkdownDescription: "Label resource",
+
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Label identifier.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"name": schema.StringAttribute{
+				Required:            true,
+				MarkdownDescription: "Label name.",
+			},
+			"metadata": schema.StringAttribute{
+				Optional:            true,
+				Computed:            true,
+				MarkdownDescription: "Label metadata.",
+			},
+			"permission_groups": schema.SetAttribute{
+				MarkdownDescription: "Which permission groups can access the resource.",
+				ElementType:         types.StringType,
+				Required:            true,
+			},
+			"device_groups": schema.SetAttribute{
+				MarkdownDescription: "The IDs of the deviceGroups that belong to the label.",
+				ElementType:         types.Int64Type,
+				Required:            true,
+			},
+			"last_updated": schema.StringAttribute{
+				Description: "Timestamp of the last Terraform update of the resource.",
+				Computed:    true,
+			},
+		},
+	}
+}
+
+func (r *LabelResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
 
-	r.client = req.ProviderData.(*hwmux.APIClient)
+	client, ok := req.ProviderData.(*hwmux.APIClient)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected *hwmux.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.client = client
 }
 
-// Metadata returns the resource type name.
-func (r *labelResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_label"
-}
+func (r *LabelResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data *LabelResourceModel
 
-// GetSchema defines the schema for the resource.
-func (r *labelResource) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
-	return tfsdk.Schema{
-		Description: "Manages a label in hwmux.",
-		Attributes: map[string]tfsdk.Attribute{
-			"id": {
-				Description: "The ID of the label.",
-				Type:        types.StringType,
-				Computed:    true,
-				PlanModifiers: []tfsdk.AttributePlanModifier{
-					resource.UseStateForUnknown(),
-				},
-			},
-			"name": {
-				Description: "The name of the label. Must be unique.",
-				Type:        types.StringType,
-				Required:    true,
-			},
-			"metadata": {
-				Description: "The metadata of the label.",
-				Type:        types.StringType,
-				Optional:    true,
-				Computed:    true,
-			},
-			"device_groups": {
-				Description: "The IDs of the deviceGroups that belong to the label.",
-				Required:    true,
-				Type: types.SetType{
-					ElemType: types.Int64Type,
-				},
-			},
-			"permission_groups": {
-				Description: "Which permission groups can access the resource.",
-				Required:    true,
-				Type: types.SetType{
-					ElemType: types.StringType,
-				},
-			},
-			"last_updated": {
-				Description: "Timestamp of the last Terraform update of the device.",
-				Type:        types.StringType,
-				Computed:    true,
-			},
-		},
-	}, nil
-}
+	// Read Terraform plan data into the model
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
-// Create creates the resource and sets the initial Terraform state.
-func (r *labelResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	// Retrieve values from plan
-	var plan labelResourceModel
-
-	diags := req.Plan.Get(ctx, &plan)
-	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	labelSerializer, err := createLabelFromPlan(&plan, &resp.Diagnostics)
+	labelSerializer, err := createLabelFromPlan(data, &resp.Diagnostics)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create label API request based on plan", err.Error(),
@@ -132,7 +134,7 @@ func (r *labelResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 	// Map response body to schema and populate Computed attribute values
 	// set model based on response
-	err = updateLabelModelFromResponse(labelSerializer, &plan, &resp.Diagnostics, r.client)
+	err = updateLabelModelFromResponse(labelSerializer, data, &resp.Diagnostics, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Updating the label model failed", err.Error(),
@@ -140,72 +142,65 @@ func (r *labelResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
-	// Set state to fully populated data
-	diags = resp.State.Set(ctx, plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// Save data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes the Terraform state with the latest data.
-func (r *labelResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state labelResourceModel
-	diags := req.State.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
+func (r *LabelResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data *LabelResourceModel
+
+	// Read Terraform prior state data into the model
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// Get refreshed label value from hwmux
-	id, _ := strconv.Atoi(state.ID.ValueString())
+	id, _ := strconv.Atoi(data.ID.ValueString())
 	label, _, err := GetLabel(r.client, &resp.Diagnostics, int32(id))
 	if err != nil {
 		return
 	}
 
 	// Map response body to model
-	state.ID = types.StringValue(strconv.Itoa(int(label.GetId())))
-	state.Name = types.StringValue(label.GetName())
+	data.ID = types.StringValue(strconv.Itoa(int(label.GetId())))
+	data.Name = types.StringValue(label.GetName())
 
-	err = MarshalMetadataSetError(label.GetMetadata(), &resp.Diagnostics, "label", &state.Metadata)
+	err = MarshalMetadataSetError(label.GetMetadata(), &resp.Diagnostics, "label", &data.Metadata)
 	if err != nil {
 		return
 	}
 
-	state.DeviceGroups = make([]types.Int64, len(label.GetDeviceGroups()))
+	data.DeviceGroups = make([]types.Int64, len(label.GetDeviceGroups()))
 	for i, deviceGroup := range label.GetDeviceGroups() {
-		state.DeviceGroups[i] = types.Int64Value(int64(deviceGroup))
+		data.DeviceGroups[i] = types.Int64Value(int64(deviceGroup))
 	}
 
 	permissionGroups, err := GetPermissionGroupsForLabel(r.client, &resp.Diagnostics, label.GetId())
 	if err != nil {
 		return
 	}
-	state.PermissionGroups = make([]types.String, len(permissionGroups))
+	data.PermissionGroups = make([]types.String, len(permissionGroups))
 	for i, aGroup := range permissionGroups {
-		state.PermissionGroups[i] = types.StringValue(aGroup)
+		data.PermissionGroups[i] = types.StringValue(aGroup)
 	}
 
-	// Set state
-	diags = resp.State.Set(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
+	// Save updated data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Update updates the resource and sets the updated Terraform state on success.
-func (r *labelResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan labelResourceModel
-	diags := req.Plan.Get(ctx, &plan)
-	resp.Diagnostics.Append(diags...)
+func (r *LabelResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data *LabelResourceModel
+
+	// Read Terraform plan data into the model
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	labelSerializer, err := createLabelFromPlan(&plan, &resp.Diagnostics)
+	labelSerializer, err := createLabelFromPlan(data, &resp.Diagnostics)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create label API request based on plan", err.Error(),
@@ -214,19 +209,19 @@ func (r *labelResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	// update label
-	id, _ := strconv.Atoi(plan.ID.ValueString())
+	id, _ := strconv.Atoi(data.ID.ValueString())
 	labelSerializer, httpRes, err := r.client.LabelsApi.LabelsUpdate(context.Background(), int32(id)).LabelSerializerWithPermissions(*labelSerializer).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating label "+plan.ID.String(),
+			"Error updating label "+data.ID.String(),
 			"Could not update label, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
 		)
 		return
 	}
 
 	// set model based on response
-	err = updateLabelModelFromResponse(labelSerializer, &plan, &resp.Diagnostics, r.client)
+	err = updateLabelModelFromResponse(labelSerializer, data, &resp.Diagnostics, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Updating the label model failed", err.Error(),
@@ -234,25 +229,22 @@ func (r *labelResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
-	// Set state to fully populated data
-	diags = resp.State.Set(ctx, plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// Save updated data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Delete deletes the resource and removes the Terraform state on success.
-func (r *labelResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state labelResourceModel
-	diags := req.State.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
+func (r *LabelResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data *LabelResourceModel
+
+	// Read Terraform prior state data into the model
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Delete existing order
-	id, _ := strconv.Atoi(state.ID.ValueString())
+	// Delete existing
+	id, _ := strconv.Atoi(data.ID.ValueString())
 	httpRes, err := r.client.LabelsApi.LabelsDestroy(context.Background(), int32(id)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -263,13 +255,12 @@ func (r *labelResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	}
 }
 
-func (r *labelResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
+func (r *LabelResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-// Create a writeOnlyLabel based on a terraform plan
-func createLabelFromPlan(plan *labelResourceModel, diagnostics *diag.Diagnostics) (*hwmux.LabelSerializerWithPermissions, error) {
+// Create a Label based on a terraform plan
+func createLabelFromPlan(plan *LabelResourceModel, diagnostics *diag.Diagnostics) (*hwmux.LabelSerializerWithPermissions, error) {
 	labelSerializer := hwmux.NewLabelSerializerWithPermissionsWithDefaults()
 	labelSerializer.SetName(plan.Name.ValueString())
 
@@ -299,7 +290,7 @@ func createLabelFromPlan(plan *labelResourceModel, diagnostics *diag.Diagnostics
 }
 
 // Map response body to model and populate Computed attribute values
-func updateLabelModelFromResponse(label *hwmux.LabelSerializerWithPermissions, plan *labelResourceModel, diagnostics *diag.Diagnostics, client *hwmux.APIClient) (err error) {
+func updateLabelModelFromResponse(label *hwmux.LabelSerializerWithPermissions, plan *LabelResourceModel, diagnostics *diag.Diagnostics, client *hwmux.APIClient) (err error) {
 	// Map response body to schema and populate Computed attribute values
 	plan.ID = types.StringValue(strconv.Itoa(int(label.GetId())))
 	plan.Name = types.StringValue(label.GetName())

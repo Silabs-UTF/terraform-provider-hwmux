@@ -2,35 +2,35 @@ package hwmux
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 	"time"
 
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
-	"github.com/hashicorp/terraform-plugin-framework/tfsdk"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"stash.silabs.com/iot_infra_sw/hwmux-client-golang"
 )
 
-// Ensure the implementation satisfies the expected interfaces.
-var (
-	_ resource.Resource                = &deviceGroupResource{}
-	_ resource.ResourceWithConfigure   = &deviceGroupResource{}
-	_ resource.ResourceWithImportState = &deviceGroupResource{}
-)
+// Ensure provider defined types fully satisfy framework interfaces
+var _ resource.Resource = &DeviceGroupResource{}
+var _ resource.ResourceWithImportState = &DeviceGroupResource{}
 
-// NewDeviceGroupResource is a helper function to simplify the provider implementation.
 func NewDeviceGroupResource() resource.Resource {
-	return &deviceGroupResource{}
+	return &DeviceGroupResource{}
 }
 
-// deviceGroupResource is the resource implementation.
-type deviceGroupResource struct {
+// DeviceGroupResource defines the resource implementation.
+type DeviceGroupResource struct {
 	client *hwmux.APIClient
 }
 
-type deviceGroupResourceModel struct {
+// DeviceGroupResourceModel describes the resource data model.
+type DeviceGroupResourceModel struct {
 	ID               types.String   `tfsdk:"id"`
 	Name             types.String   `tfsdk:"name"`
 	Metadata         types.String   `tfsdk:"metadata"`
@@ -39,79 +39,81 @@ type deviceGroupResourceModel struct {
 	LastUpdated      types.String   `tfsdk:"last_updated"`
 }
 
-// Configure adds the provider configured client to the resource.
-func (r *deviceGroupResource) Configure(_ context.Context, req resource.ConfigureRequest, _ *resource.ConfigureResponse) {
+func (r *DeviceGroupResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
+	resp.TypeName = req.ProviderTypeName + "_device_group"
+}
+
+func (r *DeviceGroupResource) Schema(ctx context.Context, req resource.SchemaRequest, resp *resource.SchemaResponse) {
+	resp.Schema = schema.Schema{
+		// This description is used by the documentation generator and the language server.
+		MarkdownDescription: "Device Group resource.",
+
+		Attributes: map[string]schema.Attribute{
+			"id": schema.StringAttribute{
+				Computed:            true,
+				MarkdownDescription: "Device Group identifier.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
+			},
+			"name": schema.StringAttribute{
+				Required:            true,
+				MarkdownDescription: "Device Group name.",
+			},
+			"metadata": schema.StringAttribute{
+				MarkdownDescription: "The metadata of the Device Group.",
+				Computed: true,
+				Optional: true,
+			},
+			"devices": schema.SetAttribute{
+				MarkdownDescription: "The devices that belong to the Device Group.",
+				Required: true,
+				ElementType: types.Int64Type,
+			},
+			"permission_groups": schema.SetAttribute{
+				MarkdownDescription: "Which permission groups can access the resource.",
+				Required: true,
+				ElementType: types.StringType,
+			},
+			"last_updated": schema.StringAttribute{
+				Description: "Timestamp of the last Terraform update of the resource.",
+				Computed:    true,
+			},
+		},
+	}
+}
+
+func (r *DeviceGroupResource) Configure(ctx context.Context, req resource.ConfigureRequest, resp *resource.ConfigureResponse) {
+	// Prevent panic if the provider has not been configured.
 	if req.ProviderData == nil {
 		return
 	}
 
-	r.client = req.ProviderData.(*hwmux.APIClient)
+	client, ok := req.ProviderData.(*hwmux.APIClient)
+
+	if !ok {
+		resp.Diagnostics.AddError(
+			"Unexpected Resource Configure Type",
+			fmt.Sprintf("Expected *hwmux.APIClient, got: %T. Please report this issue to the provider developers.", req.ProviderData),
+		)
+
+		return
+	}
+
+	r.client = client
 }
 
-// Metadata returns the resource type name.
-func (r *deviceGroupResource) Metadata(_ context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
-	resp.TypeName = req.ProviderTypeName + "_deviceGroup"
-}
+func (r *DeviceGroupResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
+	var data *DeviceGroupResourceModel
 
-// GetSchema defines the schema for the resource.
-func (r *deviceGroupResource) GetSchema(_ context.Context) (tfsdk.Schema, diag.Diagnostics) {
-	return tfsdk.Schema{
-		Description: "Manages a deviceGroup in hwmux.",
-		Attributes: map[string]tfsdk.Attribute{
-			"id": {
-				Description: "The ID of the deviceGroup.",
-				Type:        types.StringType,
-				Computed:    true,
-				PlanModifiers: []tfsdk.AttributePlanModifier{
-					resource.UseStateForUnknown(),
-				},
-			},
-			"name": {
-				Description: "The name of the deviceGroup. Must be unique.",
-				Type:        types.StringType,
-				Required:    true,
-			},
-			"metadata": {
-				Description: "The metadata of the deviceGroup.",
-				Type:        types.StringType,
-				Optional:    true,
-				Computed:    true,
-			},
-			"devices": {
-				Description: "The IDs of the devices that belong to the deviceGroup.",
-				Required:    true,
-				Type: types.SetType{
-					ElemType: types.Int64Type,
-				},
-			},
-			"permission_groups": {
-				Description: "Which permission groups can access the resource.",
-				Required:    true,
-				Type: types.SetType{
-					ElemType: types.StringType,
-				},
-			},
-			"last_updated": {
-				Description: "Timestamp of the last Terraform update of the device.",
-				Type:        types.StringType,
-				Computed:    true,
-			},
-		},
-	}, nil
-}
+	// Read Terraform plan data into the model
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
 
-// Create creates the resource and sets the initial Terraform state.
-func (r *deviceGroupResource) Create(ctx context.Context, req resource.CreateRequest, resp *resource.CreateResponse) {
-	// Retrieve values from plan
-	var plan deviceGroupResourceModel
-
-	diags := req.Plan.Get(ctx, &plan)
-	resp.Diagnostics.Append(diags...)
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	deviceGroupSerializer, err := createDeviceGroupFromPlan(&plan, &resp.Diagnostics)
+	deviceGroupSerializer, err := createDeviceGroupFromPlan(data, &resp.Diagnostics)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create deviceGroup API request based on plan", err.Error(),
@@ -132,7 +134,7 @@ func (r *deviceGroupResource) Create(ctx context.Context, req resource.CreateReq
 
 	// Map response body to schema and populate Computed attribute values
 	// set model based on response
-	err = updateDGModelFromResponse(deviceGroupSerializer, &plan, &resp.Diagnostics, r.client)
+	err = updateDGModelFromResponse(deviceGroupSerializer, data, &resp.Diagnostics, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Updating the deviceGroup model failed", err.Error(),
@@ -140,72 +142,65 @@ func (r *deviceGroupResource) Create(ctx context.Context, req resource.CreateReq
 		return
 	}
 
-	// Set state to fully populated data
-	diags = resp.State.Set(ctx, plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// Save data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Read refreshes the Terraform state with the latest data.
-func (r *deviceGroupResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
-	var state deviceGroupResourceModel
-	diags := req.State.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
+func (r *DeviceGroupResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
+	var data *DeviceGroupResourceModel
+
+	// Read Terraform prior state data into the model
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
 	// Get refreshed deviceGroup value from hwmux
-	id, _ := strconv.Atoi(state.ID.ValueString())
+	id, _ := strconv.Atoi(data.ID.ValueString())
 	deviceGroup, _, err := GetDeviceGroup(r.client, &resp.Diagnostics, int32(id))
 	if err != nil {
 		return
 	}
 
 	// Map response body to model
-	state.ID = types.StringValue(strconv.Itoa(int(deviceGroup.GetId())))
-	state.Name = types.StringValue(deviceGroup.GetName())
+	data.ID = types.StringValue(strconv.Itoa(int(deviceGroup.GetId())))
+	data.Name = types.StringValue(deviceGroup.GetName())
 
-	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), &resp.Diagnostics, "deviceGroup", &state.Metadata)
+	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), &resp.Diagnostics, "Device Group", &data.Metadata)
 	if err != nil {
 		return
 	}
 
-	state.Devices = make([]types.Int64, len(deviceGroup.GetDevices()))
+	data.Devices = make([]types.Int64, len(deviceGroup.GetDevices()))
 	for i, device := range deviceGroup.GetDevices() {
-		state.Devices[i] = types.Int64Value(int64(device.GetId()))
+		data.Devices[i] = types.Int64Value(int64(device.GetId()))
 	}
 
 	permissionGroups, err := GetPermissionGroupsForDeviceGroup(r.client, &resp.Diagnostics, deviceGroup.GetId())
 	if err != nil {
 		return
 	}
-	state.PermissionGroups = make([]types.String, len(permissionGroups))
+	data.PermissionGroups = make([]types.String, len(permissionGroups))
 	for i, aGroup := range permissionGroups {
-		state.PermissionGroups[i] = types.StringValue(aGroup)
+		data.PermissionGroups[i] = types.StringValue(aGroup)
 	}
 
-	// Set state
-	diags = resp.State.Set(ctx, &state)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
-
+	// Save updated data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Update updates the resource and sets the updated Terraform state on success.
-func (r *deviceGroupResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
-	var plan deviceGroupResourceModel
-	diags := req.Plan.Get(ctx, &plan)
-	resp.Diagnostics.Append(diags...)
+func (r *DeviceGroupResource) Update(ctx context.Context, req resource.UpdateRequest, resp *resource.UpdateResponse) {
+	var data *DeviceGroupResourceModel
+
+	// Read Terraform plan data into the model
+	resp.Diagnostics.Append(req.Plan.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	deviceGroupSerializer, err := createDeviceGroupFromPlan(&plan, &resp.Diagnostics)
+	deviceGroupSerializer, err := createDeviceGroupFromPlan(data, &resp.Diagnostics)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Failed to create deviceGroup API request based on plan", err.Error(),
@@ -214,19 +209,19 @@ func (r *deviceGroupResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	// update deviceGroup
-	id, _ := strconv.Atoi(plan.ID.ValueString())
+	id, _ := strconv.Atoi(data.ID.ValueString())
 	deviceGroupSerializer, httpRes, err := r.client.GroupsApi.GroupsUpdate(context.Background(), int32(id)).DeviceGroupSerializerWithDevicePk(*deviceGroupSerializer).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating deviceGroup "+plan.ID.String(),
+			"Error updating deviceGroup "+data.ID.String(),
 			"Could not update deviceGroup, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
 		)
 		return
 	}
 
 	// set model based on response
-	err = updateDGModelFromResponse(deviceGroupSerializer, &plan, &resp.Diagnostics, r.client)
+	err = updateDGModelFromResponse(deviceGroupSerializer, data, &resp.Diagnostics, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Updating the deviceGroup model failed", err.Error(),
@@ -234,25 +229,22 @@ func (r *deviceGroupResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	// Set state to fully populated data
-	diags = resp.State.Set(ctx, plan)
-	resp.Diagnostics.Append(diags...)
-	if resp.Diagnostics.HasError() {
-		return
-	}
+	// Save updated data into Terraform state
+	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
-// Delete deletes the resource and removes the Terraform state on success.
-func (r *deviceGroupResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
-	var state deviceGroupResourceModel
-	diags := req.State.Get(ctx, &state)
-	resp.Diagnostics.Append(diags...)
+func (r *DeviceGroupResource) Delete(ctx context.Context, req resource.DeleteRequest, resp *resource.DeleteResponse) {
+	var data *DeviceGroupResourceModel
+
+	// Read Terraform prior state data into the model
+	resp.Diagnostics.Append(req.State.Get(ctx, &data)...)
+
 	if resp.Diagnostics.HasError() {
 		return
 	}
 
-	// Delete existing order
-	id, _ := strconv.Atoi(state.ID.ValueString())
+	// Delete existing
+	id, _ := strconv.Atoi(data.ID.ValueString())
 	httpRes, err := r.client.GroupsApi.GroupsDestroy(context.Background(), int32(id)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -263,13 +255,11 @@ func (r *deviceGroupResource) Delete(ctx context.Context, req resource.DeleteReq
 	}
 }
 
-func (r *deviceGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	// Retrieve import ID and save to id attribute
+func (r *DeviceGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
-// Create a writeOnlyDeviceGroup based on a terraform plan
-func createDeviceGroupFromPlan(plan *deviceGroupResourceModel, diagnostics *diag.Diagnostics) (*hwmux.DeviceGroupSerializerWithDevicePk, error) {
+func createDeviceGroupFromPlan(plan *DeviceGroupResourceModel, diagnostics *diag.Diagnostics) (*hwmux.DeviceGroupSerializerWithDevicePk, error) {
 	deviceGroupSerializer := hwmux.NewDeviceGroupSerializerWithDevicePkWithDefaults()
 	deviceGroupSerializer.SetName(plan.Name.ValueString())
 
@@ -299,7 +289,7 @@ func createDeviceGroupFromPlan(plan *deviceGroupResourceModel, diagnostics *diag
 }
 
 // Map response body to model and populate Computed attribute values
-func updateDGModelFromResponse(deviceGroup *hwmux.DeviceGroupSerializerWithDevicePk, plan *deviceGroupResourceModel, diagnostics *diag.Diagnostics, client *hwmux.APIClient) (err error) {
+func updateDGModelFromResponse(deviceGroup *hwmux.DeviceGroupSerializerWithDevicePk, plan *DeviceGroupResourceModel, diagnostics *diag.Diagnostics, client *hwmux.APIClient) (err error) {
 	// Map response body to schema and populate Computed attribute values
 	plan.ID = types.StringValue(strconv.Itoa(int(deviceGroup.GetId())))
 	plan.Name = types.StringValue(deviceGroup.GetName())

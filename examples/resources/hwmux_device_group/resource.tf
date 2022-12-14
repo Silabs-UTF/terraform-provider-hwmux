@@ -1,4 +1,4 @@
-resource "hwmux_deviceGroup" "new_testbed" {
+resource "hwmux_device_group" "new_testbed" {
   name              = "new_testbed"
   metadata          = jsonencode(yamldecode(file("example.yaml")))
   devices           = [1, 2]

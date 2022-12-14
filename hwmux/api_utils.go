@@ -13,12 +13,7 @@ import (
 func GetDevice(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	device *hwmux.DeviceSerializerPublic, httpRes *http.Response, err error) {
 	device, httpRes, err = client.DevicesApi.DevicesRetrieve(context.Background(), id).Execute()
-	if err != nil {
-		diagnostics.AddError(
-			"Unable to Read Device",
-			err.Error(),
-		)
-	}
+	handleError(httpRes, err, diagnostics, "Device")
 	return
 }
 
@@ -26,12 +21,7 @@ func GetDevice(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32)
 func GetDeviceGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	deviceGroup *hwmux.DeviceGroup, httpRes *http.Response, err error) {
 	deviceGroup, httpRes, err = client.GroupsApi.GroupsRetrieve(context.Background(), id).Execute()
-	if err != nil {
-		diagnostics.AddError(
-			"Unable to Read DeviceGroup",
-			err.Error(),
-		)
-	}
+	handleError(httpRes, err, diagnostics, "Device Group")
 	return
 }
 
@@ -39,12 +29,31 @@ func GetDeviceGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id i
 func GetLabel(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	label *hwmux.Label, httpRes *http.Response, err error) {
 	label, httpRes, err = client.LabelsApi.LabelsRetrieve(context.Background(), id).Execute()
-	if err != nil {
-		diagnostics.AddError(
-			"Unable to Read Label",
-			err.Error(),
-		)
-	}
+	handleError(httpRes, err, diagnostics, "Label")
+	return
+}
+
+// Get part, err and set error
+func GetPart(client *hwmux.APIClient, diagnostics *diag.Diagnostics, part_no string) (
+	part *hwmux.Part, httpRes *http.Response, err error) {
+	part, httpRes, err = client.PartsApi.PartsRetrieve(context.Background(), part_no).Execute()
+	handleError(httpRes, err, diagnostics, "Part")
+	return
+}
+
+// Get room, err and set error
+func GetRoom(client *hwmux.APIClient, diagnostics *diag.Diagnostics, name string) (
+	room *hwmux.Room, httpRes *http.Response, err error) {
+	room, httpRes, err = client.RoomsApi.RoomsRetrieve(context.Background(), name).Execute()
+	handleError(httpRes, err, diagnostics, "Room")
+	return
+}
+
+// Get permission group, err and set error
+func GetPermissionGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, name string) (
+	permissionGroup *hwmux.PermissionGroup, httpRes *http.Response, err error) {
+	permissionGroup, httpRes, err = client.PermissionsApi.PermissionsGroupsRetrieve(context.Background(), name).Execute()
+	handleError(httpRes, err, diagnostics, "Permission Group")
 	return
 }
 
@@ -52,26 +61,23 @@ func GetLabel(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) 
 func GetDeviceLocation(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	location *hwmux.Location, httpRes *http.Response, err error) {
 	location, httpRes, err = client.DevicesApi.DevicesLocationRetrieve(context.Background(), strconv.Itoa(int(id))).Execute()
-	if err != nil {
-		diagnostics.AddError(
-			"Unable to Read Device Location",
-			err.Error(),
-		)
-	}
+	handleError(httpRes, err, diagnostics, "Device Location")
 	return
 }
 
 // Get permission groups for a given deviceGroup
 func GetPermissionGroupsForDeviceGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	[]string, error) {
-	objectPerms, _, err := client.GroupsApi.GroupsPermissionsRetrieve(context.Background(), id).Execute()
-	if err != nil {
-		diagnostics.AddError(
-			"Unable to Read deviceGroup Permissions",
-			err.Error(),
-		)
-		return nil, err
-	}
+	objectPerms, httpRes, err := client.GroupsApi.GroupsPermissionsRetrieve(context.Background(), id).Execute()
+	handleError(httpRes, err, diagnostics, "Permissions for Device Group")
+	return objectPermsToUGList(objectPerms), nil
+}
+
+// Get permission groups for a given device
+func GetPermissionGroupsForDevice(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
+	[]string, error) {
+	objectPerms, httpRes, err := client.DevicesApi.DevicesPermissionsRetrieve(context.Background(), id).Execute()
+	handleError(httpRes, err, diagnostics, "Permissions for Device")
 	return objectPermsToUGList(objectPerms), nil
 }
 
@@ -79,14 +85,8 @@ func GetPermissionGroupsForDeviceGroup(client *hwmux.APIClient, diagnostics *dia
 // Get permission groups for a given Label
 func GetPermissionGroupsForLabel(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	[]string, error) {
-	objectPerms, _, err := client.LabelsApi.LabelsPermissionsRetrieve(context.Background(), id).Execute()
-	if err != nil {
-		diagnostics.AddError(
-			"Unable to Read Label Permissions",
-			err.Error(),
-		)
-		return nil, err
-	}
+	objectPerms, httpRes, err := client.LabelsApi.LabelsPermissionsRetrieve(context.Background(), id).Execute()
+	handleError(httpRes, err, diagnostics, "Permissions for Label")
 	return objectPermsToUGList(objectPerms), nil
 }
 
@@ -100,4 +100,19 @@ func objectPermsToUGList(objectPerms *hwmux.ObjectPermissions) []string {
 		i++
 	}
 	return permissionGroups
+}
+
+
+// factored out error handling code for API retrieve calls
+func handleError(httpRes *http.Response, err error, diagnostics *diag.Diagnostics, name string) {
+	if err != nil {
+		errorStr := err.Error()
+		if httpRes != nil {
+			errorStr += "\nHwmux response body:" + BodyToString(&httpRes.Body)
+		}
+		diagnostics.AddError(
+			"Unable to Read " + name,
+			errorStr,
+		)
+	}
 }

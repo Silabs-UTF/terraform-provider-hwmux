@@ -3,12 +3,12 @@
 page_title: "hwmux_label Data Source - hwmux"
 subcategory: ""
 description: |-
-  Fetches a label from hwmux.
+  Label data source
 ---
 
 # hwmux_label (Data Source)
 
-Fetches a label from hwmux.
+Label data source
 
 
 
@@ -17,20 +17,20 @@ Fetches a label from hwmux.
 
 ### Required
 
-- `id` (Number) The ID of the label.
+- `id` (Number) Label identifier
 
 ### Read-Only
 
-- `device_groups` (Attributes List) The deviceGroups that belong to the label. (see [below for nested schema](#nestedatt--device_groups))
-- `metadata` (String) The metadata of the label.
-- `name` (String) The name of the label. Must be unique.
+- `device_groups` (Attributes List) The Device Groups that belong to the Label (see [below for nested schema](#nestedatt--device_groups))
+- `metadata` (String) The metadata of the Label.
+- `name` (String) Label name. Must be unique.
 
 <a id="nestedatt--device_groups"></a>
 ### Nested Schema for `device_groups`
 
 Read-Only:
 
-- `id` (Number) The ID of the deviceGroup.
-- `name` (String) The name of the deviceGroup.
+- `id` (Number) Device Group ID.
+- `name` (String) Device Group name.
 
 

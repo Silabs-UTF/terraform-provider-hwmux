@@ -3,12 +3,12 @@
 page_title: "hwmux_device Data Source - hwmux"
 subcategory: ""
 description: |-
-  Fetches a device from hwmux.
+  Device data source
 ---
 
 # hwmux_device (Data Source)
 
-Fetches a device from hwmux.
+Device data source
 
 
 
@@ -17,15 +17,15 @@ Fetches a device from hwmux.
 
 ### Required
 
-- `id` (Number) The ID of the device.
+- `id` (Number) Device identifier
 
 ### Read-Only
 
-- `is_wstk` (Boolean) Whether the device is a WSTK.
+- `is_wstk` (Boolean) If the device is a WSTK.
 - `metadata` (String) The metadata of the device.
-- `online` (Boolean) Whether the device is online.
+- `online` (Boolean) If the device is online.
 - `part` (String) The part number of the device.
-- `sn_or_name` (String) The name of the device. Must be unique.
+- `sn_or_name` (String) Device name. Must be unique.
 - `uri` (String) The URI or IP address of the device.
 
 

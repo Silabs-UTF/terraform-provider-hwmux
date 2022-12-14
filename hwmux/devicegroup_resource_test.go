@@ -13,28 +13,28 @@ func TestAccDeviceGroupResource(t *testing.T) {
             // Create and Read testing
             {
                 Config: providerConfig + `
-resource "hwmux_deviceGroup" "test" {
+resource "hwmux_device_group" "test" {
 	name     = "test_dg"
 	devices = [1, 2]
 	permission_groups = ["All users"]
 }
 `,
                 Check: resource.ComposeAggregateTestCheckFunc(
-                    resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "name", "test_dg"),
-					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "devices.#", "2"),
-					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "devices.0", "1"),
-					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "permission_groups.#", "1"),
-					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "permission_groups.0", "All users"),
-                    // Verify the deviceGroup item has Computed attributes filled.
-                    resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "metadata", "{}"),
+                    resource.TestCheckResourceAttr("hwmux_device_group.test", "name", "test_dg"),
+					resource.TestCheckResourceAttr("hwmux_device_group.test", "devices.#", "2"),
+					resource.TestCheckResourceAttr("hwmux_device_group.test", "devices.0", "1"),
+					resource.TestCheckResourceAttr("hwmux_device_group.test", "permission_groups.#", "1"),
+					resource.TestCheckResourceAttr("hwmux_device_group.test", "permission_groups.0", "All users"),
+                    // Verify the device_group item has Computed attributes filled.
+                    resource.TestCheckResourceAttr("hwmux_device_group.test", "metadata", "{}"),
                     // Verify dynamic values have any value set in the state.
-                    resource.TestCheckResourceAttrSet("hwmux_deviceGroup.test", "id"),
-                    resource.TestCheckResourceAttrSet("hwmux_deviceGroup.test", "last_updated"),
+                    resource.TestCheckResourceAttrSet("hwmux_device_group.test", "id"),
+                    resource.TestCheckResourceAttrSet("hwmux_device_group.test", "last_updated"),
                 ),
             },
             // ImportState testing
             {
-                ResourceName:      "hwmux_deviceGroup.test",
+                ResourceName:      "hwmux_device_group.test",
                 ImportState:       true,
                 ImportStateVerify: true,
                 // The last_updated attribute does not exist in the HashiCups
@@ -44,20 +44,20 @@ resource "hwmux_deviceGroup" "test" {
             // Update and Read testing
             {
                 Config: providerConfig + `
-resource "hwmux_deviceGroup" "test" {
+resource "hwmux_device_group" "test" {
 	name     = "test_dg"
 	devices = [1]
 	permission_groups = ["Staff users"]
 }
 `,
                 Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "name", "test_dg"),
-					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "devices.#", "1"),
-					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "devices.0", "1"),
-					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "permission_groups.#", "1"),
-					resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "permission_groups.0", "Staff users"),
-                    // Verify the deviceGroup item has Computed attributes filled.
-                    resource.TestCheckResourceAttr("hwmux_deviceGroup.test", "metadata", "{}"),
+					resource.TestCheckResourceAttr("hwmux_device_group.test", "name", "test_dg"),
+					resource.TestCheckResourceAttr("hwmux_device_group.test", "devices.#", "1"),
+					resource.TestCheckResourceAttr("hwmux_device_group.test", "devices.0", "1"),
+					resource.TestCheckResourceAttr("hwmux_device_group.test", "permission_groups.#", "1"),
+					resource.TestCheckResourceAttr("hwmux_device_group.test", "permission_groups.0", "Staff users"),
+                    // Verify the device_group item has Computed attributes filled.
+                    resource.TestCheckResourceAttr("hwmux_device_group.test", "metadata", "{}"),
                 ),
             },
             // Delete testing automatically occurs in TestCase

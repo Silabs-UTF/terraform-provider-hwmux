@@ -1,0 +1,10 @@
+{
+    "go.testEnvVars": {"TF_ACC": "1"},
+    
+    "[go]": {
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.organizeImports": true,
+        }
+    }
+}

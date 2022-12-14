@@ -18,6 +18,7 @@ resource "hwmux_device" "test" {
     uri = "77.7.7.7"
     part = "Part_no_0"
     room = "Room_0"
+    permission_groups = ["Staff users"]
 }
 `,
                 Check: resource.ComposeAggregateTestCheckFunc(
@@ -25,6 +26,8 @@ resource "hwmux_device" "test" {
 					resource.TestCheckResourceAttr("hwmux_device.test", "uri", "77.7.7.7"),
 					resource.TestCheckResourceAttr("hwmux_device.test", "part", "Part_no_0"),
 					resource.TestCheckResourceAttr("hwmux_device.test", "room", "Room_0"),
+                    resource.TestCheckResourceAttr("hwmux_device.test", "permission_groups.#", "1"),
+                    resource.TestCheckResourceAttr("hwmux_device.test", "permission_groups.0", "Staff users"),
                     // Verify the device item has Computed attributes filled.
                     resource.TestCheckResourceAttr("hwmux_device.test", "is_wstk", "false"),
                     resource.TestCheckResourceAttr("hwmux_device.test", "online", "true"),
@@ -53,6 +56,7 @@ resource "hwmux_device" "test" {
 	part = "Part_no_0"
 	room = "Room_0"
 	online = false
+    permission_groups = ["All users"]
 }
 `,
                 Check: resource.ComposeAggregateTestCheckFunc(
@@ -62,6 +66,8 @@ resource "hwmux_device" "test" {
 					resource.TestCheckResourceAttr("hwmux_device.test", "part", "Part_no_0"),
 					resource.TestCheckResourceAttr("hwmux_device.test", "room", "Room_0"),
 					resource.TestCheckResourceAttr("hwmux_device.test", "online", "false"),
+                    resource.TestCheckResourceAttr("hwmux_device.test", "permission_groups.#", "1"),
+                    resource.TestCheckResourceAttr("hwmux_device.test", "permission_groups.0", "All users"),
                     // Verify first coffee item has Computed attributes updated.
 				   resource.TestCheckResourceAttr("hwmux_device.test", "is_wstk", "false"),
 				   resource.TestCheckResourceAttr("hwmux_device.test", "metadata", "{}"),
