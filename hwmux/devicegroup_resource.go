@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/Silabs-UTF/hwmux-client-golang"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -13,7 +14,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"stash.silabs.com/iot_infra_sw/hwmux-client-golang"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces

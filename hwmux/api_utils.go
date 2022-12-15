@@ -5,8 +5,8 @@ import (
 	"net/http"
 	"strconv"
 
+	"github.com/Silabs-UTF/hwmux-client-golang"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"stash.silabs.com/iot_infra_sw/hwmux-client-golang"
 )
 
 // Get device, err and set error

@@ -610,5 +610,3 @@ honnef.co/go/tools v0.0.1-2020.1.4/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9
 rsc.io/binaryregexp v0.2.0/go.mod h1:qTv7/COck+e2FymRvadv62gMdZztPaShugOCi3I+8D8=
 rsc.io/quote/v3 v3.1.0/go.mod h1:yEA65RcK8LyAZtP9Kv3t0HmxON59tX3rD+tICJqUlj0=
 rsc.io/sampler v1.3.0/go.mod h1:T1hPZKmBbMNahiBKFy5HrXp6adAjACjK9JXDnKaTXpA=
-stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221213223347-09a620b7e686 h1:fXrKAJU65yMPZhjJS+/lMZgY5iKrIobjaynqPpXmDi8=
-stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221213223347-09a620b7e686/go.mod h1:zA8QyysA8N+nfcKk/qZYnQ6488Q6kPEqF3HNXchdacU=
