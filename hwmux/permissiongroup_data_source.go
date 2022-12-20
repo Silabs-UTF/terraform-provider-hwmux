@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Silabs-UTF/hwmux-client-golang"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
-	"stash.silabs.com/iot_infra_sw/hwmux-client-golang"
 )
 
 // Ensure provider defined types fully satisfy framework interfaces

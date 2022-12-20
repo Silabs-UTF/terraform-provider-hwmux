@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 
+	"github.com/Silabs-UTF/hwmux-client-golang"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -11,7 +12,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 	"github.com/hashicorp/terraform-plugin-log/tflog"
-	"stash.silabs.com/iot_infra_sw/hwmux-client-golang"
 )
 
 // Ensure HwmuxProvider satisfies various provider interfaces.

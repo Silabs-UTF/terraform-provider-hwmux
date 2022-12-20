@@ -46,6 +46,8 @@ github.com/Microsoft/go-winio v0.4.16 h1:FtSW/jqD+l4ba5iPBj9CODVtgfYAD8w2wS923g/
 github.com/Microsoft/go-winio v0.4.16/go.mod h1:XB6nPKklQyQ7GC9LdcBEcBl8PF76WugXOPRXwdLnMv0=
 github.com/ProtonMail/go-crypto v0.0.0-20210428141323-04723f9f07d7 h1:YoJbenK9C67SkzkDfmQuVln04ygHj3vjZfd9FL+GmQQ=
 github.com/ProtonMail/go-crypto v0.0.0-20210428141323-04723f9f07d7/go.mod h1:z4/9nQmJSSwwds7ejkxaJwO37dru3geImFUdJlaLzQo=
+github.com/Silabs-UTF/hwmux-client-golang v0.0.0-20221215161023-45a6bdb9b283 h1:k7S4AoyNvLw++IzuJLrXD5xGjLUh+2QMnS6HDErdZGU=
+github.com/Silabs-UTF/hwmux-client-golang v0.0.0-20221215161023-45a6bdb9b283/go.mod h1:eeo2g690hkZiBCIfLUmJ6ianRcKF2gyqK90DUlGewCg=
 github.com/acomagu/bufpipe v1.0.3 h1:fxAGrHZTgQ9w5QqVItgzwj235/uYZYgbXitB+dLupOk=
 github.com/acomagu/bufpipe v1.0.3/go.mod h1:mxdxdup/WdsKVreO5GpW4+M/1CE2sMG4jeGJ2sYmHc4=
 github.com/agext/levenshtein v1.2.2 h1:0S/Yg6LYmFJ5stwQeRp6EeOcCbj7xiqQSdNelsXvaqE=
@@ -610,5 +612,3 @@ honnef.co/go/tools v0.0.1-2020.1.4/go.mod h1:X/FiERA/W4tHapMX5mGpAtMSVEeEUOyHaw9
 rsc.io/binaryregexp v0.2.0/go.mod h1:qTv7/COck+e2FymRvadv62gMdZztPaShugOCi3I+8D8=
 rsc.io/quote/v3 v3.1.0/go.mod h1:yEA65RcK8LyAZtP9Kv3t0HmxON59tX3rD+tICJqUlj0=
 rsc.io/sampler v1.3.0/go.mod h1:T1hPZKmBbMNahiBKFy5HrXp6adAjACjK9JXDnKaTXpA=
-stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221213223347-09a620b7e686 h1:fXrKAJU65yMPZhjJS+/lMZgY5iKrIobjaynqPpXmDi8=
-stash.silabs.com/iot_infra_sw/hwmux-client-golang v0.0.0-20221213223347-09a620b7e686/go.mod h1:zA8QyysA8N+nfcKk/qZYnQ6488Q6kPEqF3HNXchdacU=
