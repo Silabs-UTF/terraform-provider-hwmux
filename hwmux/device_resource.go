@@ -194,7 +194,11 @@ func (r *DeviceResource) Read(ctx context.Context, req resource.ReadRequest, res
 	data.ID = types.StringValue(strconv.Itoa(int(device.GetId())))
 	data.Sn_or_name = types.StringValue(device.GetSnOrName())
 	data.Is_wstk = types.BoolValue(device.GetIsWstk())
-	data.Uri = types.StringValue(device.GetUri())
+	if device.GetUri() != "" {
+		data.Uri = types.StringValue(device.GetUri())
+	} else {
+		data.Uri = types.StringNull()
+	}
 	data.Online = types.BoolValue(device.GetOnline())
 
 	location, _, err := GetDeviceLocation(r.client, &resp.Diagnostics, device.GetId())
@@ -353,7 +357,11 @@ func updateDeviceModelFromResponse(device *hwmux.WriteOnlyDevice, plan *DeviceRe
 	plan.ID = types.StringValue(strconv.Itoa(int(device.GetId())))
 	plan.Sn_or_name = types.StringValue(device.GetSnOrName())
 	plan.Is_wstk = types.BoolValue(device.GetIsWstk())
-	plan.Uri = types.StringValue(device.GetUri())
+	if device.GetUri() != "" {
+		plan.Uri = types.StringValue(device.GetUri())
+	} else {
+		plan.Uri = types.StringNull()
+	}
 	plan.Online = types.BoolValue(device.GetOnline())
 	plan.Room = types.StringValue(plan.Room.ValueString())
 
