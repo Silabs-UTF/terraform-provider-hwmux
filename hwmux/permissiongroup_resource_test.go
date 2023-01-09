@@ -27,11 +27,11 @@ resource "hwmux_permission_group" "test" {
             {
                 Config: providerConfig + `
 resource "hwmux_permission_group" "test" {
-    name     = "test_permission_group_tf"
+    name     = "test_permission_group_tf-2"
 }
 `,
                 Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hwmux_permission_group.test", "name", "test_permission_group_tf"),
+					resource.TestCheckResourceAttr("hwmux_permission_group.test", "name", "test_permission_group_tf-2"),
                 ),
             },
             // Delete testing automatically occurs in TestCase
