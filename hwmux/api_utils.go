@@ -57,6 +57,14 @@ func GetPermissionGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, 
 	return
 }
 
+// Get user, err and set error
+func GetUser(client *hwmux.APIClient, diagnostics *diag.Diagnostics, username string) (
+	user *hwmux.LoggedInUser, httpRes *http.Response, err error) {
+	user, httpRes, err = client.UserApi.UserRetrieve(context.Background(), username).Execute()
+	handleError(httpRes, err, diagnostics, "User")
+	return
+}
+
 // Get Location by device id
 func GetDeviceLocation(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	location *hwmux.Location, httpRes *http.Response, err error) {
