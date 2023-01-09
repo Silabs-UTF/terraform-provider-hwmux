@@ -8,7 +8,6 @@ import (
 
 	"github.com/Silabs-UTF/hwmux-client-golang"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -18,7 +17,6 @@ import (
 
 // Ensure provider defined types fully satisfy framework interfaces
 var _ resource.Resource = &PermissionGroupResource{}
-var _ resource.ResourceWithImportState = &PermissionGroupResource{}
 
 func NewPermissionGroupResource() resource.Resource {
 	return &PermissionGroupResource{}
@@ -219,10 +217,6 @@ func (r *PermissionGroupResource) Delete(ctx context.Context, req resource.Delet
 		)
 		return
 	}
-}
-
-func (r *PermissionGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 // Create a PermissionGroup based on a terraform plan
