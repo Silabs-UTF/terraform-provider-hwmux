@@ -124,3 +124,57 @@ func handleError(httpRes *http.Response, err error, diagnostics *diag.Diagnostic
 		)
 	}
 }
+
+
+// modify user permissions. Sets diagnostics and returns error
+func modifyUserPermissions(user *hwmux.LoggedInUser, plan *UserResourceModel, diagnostics *diag.Diagnostics, client *hwmux.APIClient) (err error) {
+	desired := make(map[string]bool)
+	existing := make(map[string]bool)
+
+	// sets do not exist in go, so we use maps instead
+	for _, aGroup := range user.GetGroups() {
+		existing[aGroup] = true
+	}
+	for _, aGroup := range plan.PermissionGroups {
+		if aGroup.ValueString() != "" {
+			desired[aGroup.ValueString()] = true
+		}
+	}
+
+	// removed permissions when they exist but are not desired
+	for groupName := range existing {
+		if !desired[groupName] {
+			httpRes, err := client.PermissionsApi.PermissionsGroupsUsersDestroy(context.Background(), groupName, user.GetUsername()).Execute()
+			if err != nil {
+				errorStr := err.Error()
+				if httpRes != nil {
+					errorStr += "\nHwmux response body:" + BodyToString(&httpRes.Body)
+				}
+				diagnostics.AddError(
+					"Unable to remove user " + user.GetUsername() + " from group " + groupName,
+					errorStr,
+				)
+				return err
+			}
+		}
+	}
+	// add permissions when they are desired but do not exist
+	for groupName := range desired {
+		if !existing[groupName] {
+			_, httpRes, err := client.PermissionsApi.PermissionsGroupsUsersCreate(context.Background(), groupName).User([]hwmux.User{*hwmux.NewUser(user.GetUsername())}).Execute()
+			if err != nil {
+				errorStr := err.Error()
+				if httpRes != nil {
+					errorStr += "\nHwmux response body:" + BodyToString(&httpRes.Body)
+				}
+				diagnostics.AddError(
+					"Unable to add user " + user.GetUsername() + " to group " + groupName,
+					errorStr,
+				)
+				return err
+			}
+		}
+	}
+
+	return nil
+}
