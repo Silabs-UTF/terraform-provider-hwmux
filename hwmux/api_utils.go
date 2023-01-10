@@ -57,6 +57,14 @@ func GetPermissionGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, 
 	return
 }
 
+// Get user, err and set error
+func GetUser(client *hwmux.APIClient, diagnostics *diag.Diagnostics, username string) (
+	user *hwmux.LoggedInUser, httpRes *http.Response, err error) {
+	user, httpRes, err = client.UserApi.UserRetrieve(context.Background(), username).Execute()
+	handleError(httpRes, err, diagnostics, "User")
+	return
+}
+
 // Get Location by device id
 func GetDeviceLocation(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	location *hwmux.Location, httpRes *http.Response, err error) {
@@ -115,4 +123,63 @@ func handleError(httpRes *http.Response, err error, diagnostics *diag.Diagnostic
 			errorStr,
 		)
 	}
+}
+
+
+// modify user permissions. Sets diagnostics and returns error
+func processUserPermissions(user *hwmux.LoggedInUser, plan *UserResourceModel, diagnostics *diag.Diagnostics, client *hwmux.APIClient) (error) {
+	desired := make(map[string]bool)
+	existing := make(map[string]bool)
+
+	// sets do not exist in go, so we use maps instead
+	for _, aGroup := range user.GetGroups() {
+		existing[aGroup] = true
+	}
+	for _, aGroup := range plan.PermissionGroups {
+		if aGroup.ValueString() != "" {
+			desired[aGroup.ValueString()] = true
+		}
+	}
+
+	// removed permissions when they exist but are not desired
+	for groupName := range existing {
+		if !desired[groupName] {
+			httpRes, err := client.PermissionsApi.PermissionsGroupsUsersDestroy(context.Background(), groupName, user.GetUsername()).Execute()
+			if err != nil {
+				errorStr := err.Error()
+				if httpRes != nil {
+					errorStr += "\nHwmux response body:" + BodyToString(&httpRes.Body)
+				}
+				diagnostics.AddError(
+					"Unable to remove user " + user.GetUsername() + " from group " + groupName,
+					errorStr,
+				)
+				return err
+			}
+		}
+	}
+	// add permissions when they are desired but do not exist
+	for groupName := range desired {
+		if !existing[groupName] {
+			_, httpRes, err := client.PermissionsApi.PermissionsGroupsUsersCreate(context.Background(), groupName).User([]hwmux.User{*hwmux.NewUser(user.GetUsername())}).Execute()
+			if err != nil {
+				errorStr := err.Error()
+				if httpRes != nil {
+					errorStr += "\nHwmux response body:" + BodyToString(&httpRes.Body)
+				}
+				diagnostics.AddError(
+					"Unable to add user " + user.GetUsername() + " to group " + groupName,
+					errorStr,
+				)
+				return err
+			}
+		}
+	}
+
+	user.Groups = make([]string, len(plan.PermissionGroups))
+	for i, groupName := range plan.PermissionGroups {
+		user.Groups[i] = groupName.ValueString()
+	}
+
+	return nil
 }

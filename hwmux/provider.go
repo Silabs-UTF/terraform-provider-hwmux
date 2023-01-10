@@ -147,6 +147,7 @@ func (p *HwmuxProvider) Resources(ctx context.Context) []func() resource.Resourc
 		NewDeviceGroupResource,
 		NewLabelResource,
 		NewPermissionGroupResource,
+		NewUserResource,
 	}
 }
 
