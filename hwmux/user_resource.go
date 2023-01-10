@@ -148,6 +148,12 @@ func (r *UserResource) Create(ctx context.Context, req resource.CreateRequest, r
 		return
 	}
 
+	// process group membership
+	err = processUserPermissions(userSerializer, data, &resp.Diagnostics, r.client)
+	if err != nil {
+		return
+	}
+
 	// Map response body to schema and populate Computed attribute values
 	// set model based on response
 	err = updateUserModelFromResponse(userSerializer, data, &resp.Diagnostics, r.client)
@@ -216,6 +222,12 @@ func (r *UserResource) Update(ctx context.Context, req resource.UpdateRequest, r
 			"Error updating user "+data.ID.String(),
 			"Could not update user, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
 		)
+		return
+	}
+
+	// process group membership
+	err = processUserPermissions(userSerializer, data, &resp.Diagnostics, r.client)
+	if err != nil {
 		return
 	}
 

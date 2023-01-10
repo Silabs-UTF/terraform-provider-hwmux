@@ -127,7 +127,7 @@ func handleError(httpRes *http.Response, err error, diagnostics *diag.Diagnostic
 
 
 // modify user permissions. Sets diagnostics and returns error
-func modifyUserPermissions(user *hwmux.LoggedInUser, plan *UserResourceModel, diagnostics *diag.Diagnostics, client *hwmux.APIClient) (err error) {
+func processUserPermissions(user *hwmux.LoggedInUser, plan *UserResourceModel, diagnostics *diag.Diagnostics, client *hwmux.APIClient) (error) {
 	desired := make(map[string]bool)
 	existing := make(map[string]bool)
 
