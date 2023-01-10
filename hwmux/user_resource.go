@@ -77,12 +77,12 @@ func (r *UserResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 				Computed:            true,
 				MarkdownDescription: "User last name.",
 			},
-			"is_staff": schema.StringAttribute{
+			"is_staff": schema.BoolAttribute{
 				Optional:            true,
 				Computed:            true,
 				MarkdownDescription: "Whether the user is a staff user.",
 			},
-			"is_superuser": schema.StringAttribute{
+			"is_superuser": schema.BoolAttribute{
 				Computed:            true,
 				MarkdownDescription: "Whether the user is a super user.",
 			},

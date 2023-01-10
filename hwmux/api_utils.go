@@ -176,5 +176,10 @@ func processUserPermissions(user *hwmux.LoggedInUser, plan *UserResourceModel, d
 		}
 	}
 
+	user.Groups = make([]string, len(plan.PermissionGroups))
+	for i, groupName := range plan.PermissionGroups {
+		user.Groups[i] = groupName.ValueString()
+	}
+
 	return nil
 }
