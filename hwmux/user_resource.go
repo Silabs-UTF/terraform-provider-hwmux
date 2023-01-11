@@ -3,6 +3,7 @@ package hwmux
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"time"
 
 	"github.com/Silabs-UTF/hwmux-client-golang"
@@ -283,7 +284,7 @@ func createUserFromPlan(plan *UserResourceModel, diagnostics *diag.Diagnostics) 
 // Map response body to model and populate Computed attribute values
 func updateUserModelFromResponse(user *hwmux.LoggedInUser, plan *UserResourceModel, diagnostics *diag.Diagnostics, client *hwmux.APIClient) (err error) {
 	// Map response body to schema and populate Computed attribute values
-	plan.ID = types.StringValue(user.GetUsername())
+	plan.ID = types.StringValue(strconv.Itoa(int(user.GetId())))
 	plan.Username = types.StringValue(user.GetUsername())
 	plan.FirstName = types.StringValue(user.GetFirstName())
 	plan.LastName = types.StringValue(user.GetLastName())
