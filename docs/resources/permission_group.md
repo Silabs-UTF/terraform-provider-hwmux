@@ -31,4 +31,11 @@ resource "hwmux_permission_group" "new_permission_group" {
 - `last_updated` (String) Timestamp of the last Terraform update of the resource.
 - `permissions` (Set of String) The permissions that this permission group has.
 
+## Import
 
+Import is supported using the following syntax:
+
+```shell
+# A permission_group can be imported by specifying its ID
+terraform import hwmux_permission_group.example 123
+```
