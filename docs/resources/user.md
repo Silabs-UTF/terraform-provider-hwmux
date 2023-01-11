@@ -15,6 +15,7 @@ User resource
 ```terraform
 resource "hwmux_user" "new_user" {
   username          = "new user"
+  password          = "a password"
   permission_groups = ["A permission group"]
 }
 ```
@@ -24,6 +25,7 @@ resource "hwmux_user" "new_user" {
 
 ### Required
 
+- `password` (String, Sensitive) User password.
 - `permission_groups` (Set of String) Which permission groups can access the resource.
 - `username` (String) Username.
 
