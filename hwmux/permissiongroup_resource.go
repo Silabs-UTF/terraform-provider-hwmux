@@ -8,6 +8,7 @@ import (
 
 	"github.com/Silabs-UTF/hwmux-client-golang"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
+	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -17,6 +18,7 @@ import (
 
 // Ensure provider defined types fully satisfy framework interfaces
 var _ resource.Resource = &PermissionGroupResource{}
+var _ resource.ResourceWithImportState = &PermissionGroupResource{}
 
 func NewPermissionGroupResource() resource.Resource {
 	return &PermissionGroupResource{}
@@ -143,7 +145,7 @@ func (r *PermissionGroupResource) Read(ctx context.Context, req resource.ReadReq
 	}
 
 	// Get refreshed permissionGroup value from hwmux
-	permissionGroup, _, err := GetPermissionGroup(r.client, &resp.Diagnostics, data.Name.ValueString())
+	permissionGroup, _, err := GetPermissionGroup(r.client, &resp.Diagnostics, data.ID.ValueString())
 	if err != nil {
 		return
 	}
@@ -175,7 +177,7 @@ func (r *PermissionGroupResource) Update(ctx context.Context, req resource.Updat
 
 	// TODO: implement when available
 	// update permissionGroup
-	permissionGroupSerializer, httpRes, err := r.client.PermissionsApi.PermissionsGroupsUpdate(context.Background(), state.Name.ValueString()).PermissionGroup(*permissionGroupSerializer).Execute()
+	permissionGroupSerializer, httpRes, err := r.client.PermissionsApi.PermissionsGroupsUpdate(context.Background(), state.ID.ValueString()).PermissionGroup(*permissionGroupSerializer).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -209,7 +211,7 @@ func (r *PermissionGroupResource) Delete(ctx context.Context, req resource.Delet
 	}
 
 	// Delete existing
-	httpRes, err := r.client.PermissionsApi.PermissionsGroupsDestroy(context.Background(), data.Name.ValueString()).Execute()
+	httpRes, err := r.client.PermissionsApi.PermissionsGroupsDestroy(context.Background(), data.ID.ValueString()).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting PermissionGroup",
@@ -217,6 +219,10 @@ func (r *PermissionGroupResource) Delete(ctx context.Context, req resource.Delet
 		)
 		return
 	}
+}
+
+func (r *PermissionGroupResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
+	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 // Create a PermissionGroup based on a terraform plan
