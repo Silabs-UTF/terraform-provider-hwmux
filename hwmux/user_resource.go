@@ -36,6 +36,7 @@ type UserResourceModel struct {
 	FirstName        types.String   `tfsdk:"first_name"`
 	LastName         types.String   `tfsdk:"last_name"`
 	Email            types.String   `tfsdk:"email"`
+	Password         types.String   `tfsdk:"password"`
 	IsStaff          types.Bool     `tfsdk:"is_staff"`
 	IsSuperuser      types.Bool     `tfsdk:"is_superuser"`
 	PermissionGroups []types.String `tfsdk:"permission_groups"`
@@ -62,6 +63,14 @@ func (r *UserResource) Schema(ctx context.Context, req resource.SchemaRequest, r
 			"username": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "Username.",
+			},
+			"password": schema.StringAttribute{
+				Required:            true,
+				Sensitive:           true,
+				MarkdownDescription: "User password.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"first_name": schema.StringAttribute{
 				Optional:            true,
@@ -277,6 +286,7 @@ func createUserFromPlan(plan *UserResourceModel, diagnostics *diag.Diagnostics) 
 	userSerializer.SetFirstName(plan.FirstName.ValueString())
 	userSerializer.SetLastName(plan.LastName.ValueString())
 	userSerializer.SetEmail(plan.Email.ValueString())
+	userSerializer.SetPassword(plan.Password.ValueString())
 
 	return userSerializer, nil
 }
@@ -291,6 +301,7 @@ func updateUserModelFromResponse(user *hwmux.LoggedInUser, plan *UserResourceMod
 	plan.Email = types.StringValue(user.GetEmail())
 	plan.IsStaff = types.BoolValue(user.GetIsStaff())
 	plan.IsSuperuser = types.BoolValue(user.GetIsSuperuser())
+	// the API does not return the password, so if they drift, they drift
 
 	plan.PermissionGroups = make([]types.String, len(user.GetGroups()))
 	for i, aGroup := range user.GetGroups() {

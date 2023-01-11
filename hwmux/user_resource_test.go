@@ -15,6 +15,7 @@ func TestAccUserResource(t *testing.T) {
                 Config: providerConfig + `
 resource "hwmux_user" "test" {
 	username     = "team1_jenkins"
+    password     = "a_password"
 	permission_groups = ["All users"]
 }
 `,
@@ -33,18 +34,19 @@ resource "hwmux_user" "test" {
                 ImportStateVerify: true,
                 // The last_updated attribute does not exist in the HashiCups
                 // API, therefore there is no value for it during import.
-                ImportStateVerifyIgnore: []string{"last_updated"},
+                ImportStateVerifyIgnore: []string{"last_updated", "password"},
             },
             // Update and Read testing
             {
                 Config: providerConfig + `
 resource "hwmux_user" "test" {
-    username     = "team1_jenkins"
+    username     = "team1_jenkins-2"
+    password     = "a_password-2"
 	permission_groups = ["Staff users"]
 }
 `,
                 Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hwmux_user.test", "username", "team1_jenkins"),
+					resource.TestCheckResourceAttr("hwmux_user.test", "username", "team1_jenkins-2"),
 					resource.TestCheckResourceAttr("hwmux_user.test", "permission_groups.#", "1"),
 					resource.TestCheckResourceAttr("hwmux_user.test", "permission_groups.0", "Staff users"),
                 ),
