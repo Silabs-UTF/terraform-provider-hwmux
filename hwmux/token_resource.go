@@ -8,7 +8,6 @@ import (
 
 	"github.com/Silabs-UTF/hwmux-client-golang"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
-	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
@@ -18,7 +17,6 @@ import (
 
 // Ensure provider defined types fully satisfy framework interfaces
 var _ resource.Resource = &TokenResource{}
-var _ resource.ResourceWithImportState = &TokenResource{}
 
 func NewTokenResource() resource.Resource {
 	return &TokenResource{}
@@ -240,10 +238,6 @@ func (r *TokenResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		)
 		return
 	}
-}
-
-func (r *TokenResource) ImportState(ctx context.Context, req resource.ImportStateRequest, resp *resource.ImportStateResponse) {
-	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
 // Create a Token based on a terraform plan
