@@ -29,9 +29,9 @@ type TokenResource struct {
 // TokenResourceModel describes the resource data model.
 type TokenResourceModel struct {
 	ID          types.String `tfsdk:"id"`
-	Token       types.String `tfsdk:"tokenname"`
-	UserId      types.String `tfsdk:"id"`
-	DateCreated types.String `tfsdk:"last_updated"`
+	Token       types.String `tfsdk:"token"`
+	UserId      types.String `tfsdk:"user_id"`
+	DateCreated types.String `tfsdk:"date_created"`
 	LastUpdated types.String `tfsdk:"last_updated"`
 }
 
@@ -143,7 +143,7 @@ func (r *TokenResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	}
 
 	// Get refreshed token value from hwmux
-	token, _, err := GetToken(r.client, &resp.Diagnostics, data.ID.ValueString())
+	token, _, err := GetToken(r.client, &resp.Diagnostics, data.UserId.ValueString())
 	if err != nil {
 		return
 	}
@@ -171,7 +171,7 @@ func (r *TokenResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	// update token
-	tokenSerializer, httpRes, err := r.client.UserApi.UserTokenCreate(context.Background(), data.ID.ValueString()).Execute()
+	tokenSerializer, httpRes, err := r.client.UserApi.UserTokenCreate(context.Background(), data.UserId.ValueString()).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
