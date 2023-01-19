@@ -3,7 +3,6 @@ package hwmux
 import (
 	"context"
 	"fmt"
-	"strconv"
 	"time"
 
 	"github.com/Silabs-UTF/hwmux-client-golang"
@@ -56,6 +55,9 @@ func (r *TokenResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 			"user_id": schema.StringAttribute{
 				Required:            true,
 				MarkdownDescription: "The user Id.",
+				PlanModifiers: []planmodifier.String{
+					stringplanmodifier.UseStateForUnknown(),
+				},
 			},
 			"token": schema.StringAttribute{
 				Computed:            true,
@@ -104,28 +106,15 @@ func (r *TokenResource) Create(ctx context.Context, req resource.CreateRequest, 
 		return
 	}
 
-	tokenSerializer, err := createTokenFromPlan(data, &resp.Diagnostics)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to create token API request based on plan", err.Error(),
-		)
-		return
-	}
-
 	// create new token
-	tokenSerializer, httpRes, err := r.client.UserApi.UserTo(context.Background()).LoggedInToken(*tokenSerializer).Execute()
+	tokenSerializer, httpRes, err := r.client.UserApi.UserTokenCreate(context.Background(), data.UserId.ValueString()).Execute()
+	data.ID = types.StringValue(tokenSerializer.GetKey())
 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error creating token",
 			"Could not create token, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
 		)
-		return
-	}
-
-	// process group membership
-	err = processTokenPermissions(tokenSerializer, data, &resp.Diagnostics, r.client)
-	if err != nil {
 		return
 	}
 
@@ -181,28 +170,14 @@ func (r *TokenResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
-	tokenSerializer, err := createTokenFromPlan(data, &resp.Diagnostics)
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Failed to create token API request based on plan", err.Error(),
-		)
-		return
-	}
-
 	// update token
-	tokenSerializer, httpRes, err := r.client.TokenApi.TokenUpdate(context.Background(), data.ID.ValueString()).LoggedInToken(*tokenSerializer).Execute()
+	tokenSerializer, httpRes, err := r.client.UserApi.UserTokenCreate(context.Background(), data.ID.ValueString()).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating token "+data.ID.String(),
 			"Could not update token, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
 		)
-		return
-	}
-
-	// process group membership
-	err = processTokenPermissions(tokenSerializer, data, &resp.Diagnostics, r.client)
-	if err != nil {
 		return
 	}
 
@@ -229,8 +204,8 @@ func (r *TokenResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		return
 	}
 
-	// Delete existing
-	httpRes, err := r.client.TokenApi.TokenDestroy(context.Background(), data.ID.ValueString()).Execute()
+	// Delete existing (we delete by creating a new one that invalidates the previous one)
+	_, httpRes, err := r.client.UserApi.UserTokenCreate(context.Background(), data.UserId.ValueString()).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Token",
@@ -240,34 +215,11 @@ func (r *TokenResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	}
 }
 
-// Create a Token based on a terraform plan
-func createTokenFromPlan(plan *TokenResourceModel, diagnostics *diag.Diagnostics) (*hwmux.LoggedInToken, error) {
-	tokenSerializer := hwmux.NewLoggedInTokenWithDefaults()
-	tokenSerializer.SetTokenname(plan.Tokenname.ValueString())
-	tokenSerializer.SetFirstName(plan.FirstName.ValueString())
-	tokenSerializer.SetLastName(plan.LastName.ValueString())
-	tokenSerializer.SetEmail(plan.Email.ValueString())
-	tokenSerializer.SetPassword(plan.Password.ValueString())
-
-	return tokenSerializer, nil
-}
-
 // Map response body to model and populate Computed attribute values
-func updateTokenModelFromResponse(token *hwmux.LoggedInToken, plan *TokenResourceModel, diagnostics *diag.Diagnostics, client *hwmux.APIClient) (err error) {
+func updateTokenModelFromResponse(token *hwmux.Token, plan *TokenResourceModel, diagnostics *diag.Diagnostics, client *hwmux.APIClient) (err error) {
 	// Map response body to schema and populate Computed attribute values
-	plan.ID = types.StringValue(strconv.Itoa(int(token.GetId())))
-	plan.Tokenname = types.StringValue(token.GetTokenname())
-	plan.FirstName = types.StringValue(token.GetFirstName())
-	plan.LastName = types.StringValue(token.GetLastName())
-	plan.Email = types.StringValue(token.GetEmail())
-	plan.IsStaff = types.BoolValue(token.GetIsStaff())
-	plan.IsSupertoken = types.BoolValue(token.GetIsSupertoken())
-	// the API does not return the password, so if they drift, they drift
-
-	plan.PermissionGroups = make([]types.String, len(token.GetGroups()))
-	for i, aGroup := range token.GetGroups() {
-		plan.PermissionGroups[i] = types.StringValue(aGroup)
-	}
+	plan.Token = types.StringValue(token.GetKey())
+	plan.DateCreated = types.StringValue(token.GetCreated().Format(time.RFC850))
 
 	plan.LastUpdated = types.StringValue(time.Now().Format(time.RFC850))
 
