@@ -3,7 +3,7 @@ module terraform-provider-hwmux
 go 1.18
 
 require (
-	github.com/Silabs-UTF/hwmux-client-golang v0.0.0-20230111155145-97a54640e178
+	github.com/Silabs-UTF/hwmux-client-golang v0.0.0-20230119160038-493d47d395fa
 	github.com/hashicorp/terraform-plugin-docs v0.13.0
 	github.com/hashicorp/terraform-plugin-framework v1.1.1
 	github.com/hashicorp/terraform-plugin-go v0.14.3

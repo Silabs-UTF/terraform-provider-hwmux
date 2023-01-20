@@ -57,6 +57,14 @@ func GetPermissionGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, 
 	return
 }
 
+// Get token, err and set error
+func GetToken(client *hwmux.APIClient, diagnostics *diag.Diagnostics, username string) (
+	token *hwmux.Token, httpRes *http.Response, err error) {
+	token, httpRes, err = client.UserApi.UserTokenRetrieve(context.Background(), username).Execute()
+	handleError(httpRes, err, diagnostics, "Token")
+	return
+}
+
 // Get user, err and set error
 func GetUser(client *hwmux.APIClient, diagnostics *diag.Diagnostics, username string) (
 	user *hwmux.LoggedInUser, httpRes *http.Response, err error) {
