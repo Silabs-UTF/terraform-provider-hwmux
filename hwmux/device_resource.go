@@ -192,7 +192,11 @@ func (r *DeviceResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	// Map response body to model
 	data.ID = types.StringValue(strconv.Itoa(int(device.GetId())))
-	data.Sn_or_name = types.StringValue(device.GetSnOrName())
+	if device.GetSnOrName() != "" {
+		data.Sn_or_name = types.StringValue(device.GetSnOrName())
+	} else {
+		data.Sn_or_name = types.StringNull()
+	}
 	data.Is_wstk = types.BoolValue(device.GetIsWstk())
 	if device.GetUri() != "" {
 		data.Uri = types.StringValue(device.GetUri())
@@ -355,7 +359,11 @@ func updateDeviceModelFromResponse(device *hwmux.WriteOnlyDevice, plan *DeviceRe
 	client *hwmux.APIClient) (err error) {
 	// Map response body to schema and populate Computed attribute values
 	plan.ID = types.StringValue(strconv.Itoa(int(device.GetId())))
-	plan.Sn_or_name = types.StringValue(device.GetSnOrName())
+	if device.GetSnOrName() != "" {
+		plan.Sn_or_name = types.StringValue(device.GetSnOrName())
+	} else {
+		plan.Sn_or_name = types.StringNull()
+	}
 	plan.Is_wstk = types.BoolValue(device.GetIsWstk())
 	if device.GetUri() != "" {
 		plan.Uri = types.StringValue(device.GetUri())
