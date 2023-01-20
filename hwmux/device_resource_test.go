@@ -109,6 +109,15 @@ resource "hwmux_device" "test" {
                     resource.TestCheckResourceAttrSet("hwmux_device.test", "last_updated"),
                 ),
             },
+            // ImportState testing
+            {
+                ResourceName:      "hwmux_device.test",
+                ImportState:       true,
+                ImportStateVerify: true,
+                // The last_updated attribute does not exist in the HashiCups
+                // API, therefore there is no value for it during import.
+                ImportStateVerifyIgnore: []string{"last_updated"},
+            },
             // Delete testing automatically occurs in TestCase
         },
     })
@@ -142,6 +151,15 @@ resource "hwmux_device" "test" {
                     resource.TestCheckResourceAttrSet("hwmux_device.test", "id"),
                     resource.TestCheckResourceAttrSet("hwmux_device.test", "last_updated"),
                 ),
+            },
+            // ImportState testing
+            {
+                ResourceName:      "hwmux_device.test",
+                ImportState:       true,
+                ImportStateVerify: true,
+                // The last_updated attribute does not exist in the HashiCups
+                // API, therefore there is no value for it during import.
+                ImportStateVerifyIgnore: []string{"last_updated"},
             },
             // Delete testing automatically occurs in TestCase
         },

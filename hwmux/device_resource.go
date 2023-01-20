@@ -63,6 +63,7 @@ func (r *DeviceResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			},
 			"sn_or_name": schema.StringAttribute{
 				Optional:            true,
+				Computed: 			 true,
 				MarkdownDescription: "Device name.",
 			},
 			"uri": schema.StringAttribute{
