@@ -7,12 +7,14 @@ import (
 	"time"
 
 	"github.com/Silabs-UTF/hwmux-client-golang"
+	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/planmodifier"
 	"github.com/hashicorp/terraform-plugin-framework/resource/schema/stringplanmodifier"
+	"github.com/hashicorp/terraform-plugin-framework/schema/validator"
 	"github.com/hashicorp/terraform-plugin-framework/types"
 )
 
@@ -63,11 +65,20 @@ func (r *DeviceResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			},
 			"sn_or_name": schema.StringAttribute{
 				Optional:            true,
+				Computed: 			 true,
 				MarkdownDescription: "Device name.",
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					stringvalidator.LengthAtMost(255),
+				},
 			},
 			"uri": schema.StringAttribute{
 				MarkdownDescription: "The URI or IP address of the device.",
 				Optional:            true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					stringvalidator.LengthAtMost(255),
+				},
 			},
 			"part": schema.StringAttribute{
 				MarkdownDescription: "The part number of the device.",
