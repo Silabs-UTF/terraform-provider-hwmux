@@ -328,7 +328,7 @@ func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnosti
 	if !plan.Is_wstk.IsUnknown() {
 		writeOnlyDevice.SetIsWstk(plan.Is_wstk.ValueBool())
 	}
-	if !plan.Sn_or_name.IsNull() {
+	if !plan.Sn_or_name.IsUnknown() {
 		sn_or_name := plan.Sn_or_name.ValueString()
 		writeOnlyDevice.SnOrName.Set(&sn_or_name)
 	}
