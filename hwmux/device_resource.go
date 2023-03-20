@@ -332,7 +332,7 @@ func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnosti
 		sn_or_name := plan.Sn_or_name.ValueString()
 		writeOnlyDevice.SnOrName.Set(&sn_or_name)
 	}
-	if !plan.Uri.IsNull() {
+	if !plan.Uri.IsUnknown() {
 		writeOnlyDevice.SetUri(plan.Uri.ValueString())
 	}
 	if !plan.Metadata.IsUnknown() {
