@@ -30,6 +30,7 @@ type DeviceDataSourceModel struct {
 	Online     types.Bool   `tfsdk:"online"`
 	Metadata   types.String `tfsdk:"metadata"`
 	Part       types.String `tfsdk:"part"`
+	Wstk_part  types.String `tfsdk:"wstk_part"`
 }
 
 func (d *DeviceDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -61,6 +62,10 @@ func (d *DeviceDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 			"is_wstk": schema.BoolAttribute{
 				MarkdownDescription: "If the device is a WSTK.",
 				Computed: true,
+			},
+			"wstk_part": schema.StringAttribute{
+				MarkdownDescription: "The part number of the wstk the device is on.",
+				Computed:            true,
 			},
 			"online": schema.BoolAttribute{
 				MarkdownDescription: "If the device is online.",
@@ -121,6 +126,8 @@ func (d *DeviceDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	}
 
 	data.Part = types.StringValue(device.Part.GetPartNo())
+
+	data.Wstk_part = types.StringValue(device.GetWstkPart())
 
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
