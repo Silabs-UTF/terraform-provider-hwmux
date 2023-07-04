@@ -23,20 +23,19 @@ type PartDataSource struct {
 
 // partDataSourceModel maps the data source schema data.
 type PartDataSourceModel struct {
-	ID          types.String          `tfsdk:"id"`
-	Part_no     types.String          `tfsdk:"part_no"`
-	Board_no    types.String          `tfsdk:"board_no"`
-	Chip_no     types.String          `tfsdk:"chip_no"`
-	Variant     types.String          `tfsdk:"variant"`
-	Revision    types.String          `tfsdk:"revision"`
+	ID          types.String           `tfsdk:"id"`
+	Part_no     types.String           `tfsdk:"part_no"`
+	Board_no    types.String           `tfsdk:"board_no"`
+	Chip_no     types.String           `tfsdk:"chip_no"`
+	Variant     types.String           `tfsdk:"variant"`
+	Revision    types.String           `tfsdk:"revision"`
 	Part_family *nestedPartFamilyModel `tfsdk:"part_family"`
-	Metadata    types.String          `tfsdk:"metadata"`
+	Metadata    types.String           `tfsdk:"metadata"`
 }
 
 type nestedPartFamilyModel struct {
 	Name types.String `tfsdk:"name"`
 }
-
 
 func (d *PartDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_part"
@@ -74,15 +73,15 @@ func (d *PartDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 			},
 			"metadata": schema.StringAttribute{
 				MarkdownDescription: "The metadata of the Part.",
-				Computed: true,
+				Computed:            true,
 			},
 			"part_family": schema.SingleNestedAttribute{
 				MarkdownDescription: "The Part Family.",
-				Computed: true,
+				Computed:            true,
 				Attributes: map[string]schema.Attribute{
 					"name": schema.StringAttribute{
 						MarkdownDescription: "The part family name.",
-						Computed: true,
+						Computed:            true,
 					},
 				},
 			},

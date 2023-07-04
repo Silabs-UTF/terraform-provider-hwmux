@@ -29,7 +29,6 @@ type RoomDataSourceModel struct {
 	Metadata types.String `tfsdk:"metadata"`
 }
 
-
 func (d *RoomDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_room"
 }
@@ -54,7 +53,7 @@ func (d *RoomDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 			},
 			"metadata": schema.StringAttribute{
 				MarkdownDescription: "The metadata of the Room.",
-				Computed: true,
+				Computed:            true,
 			},
 		},
 	}

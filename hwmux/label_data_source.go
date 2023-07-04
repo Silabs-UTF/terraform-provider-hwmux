@@ -34,7 +34,6 @@ type nestedDeviceGroupModel struct {
 	Name types.String `tfsdk:"name"`
 }
 
-
 func (d *LabelDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_label"
 }
@@ -55,20 +54,20 @@ func (d *LabelDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 			},
 			"metadata": schema.StringAttribute{
 				MarkdownDescription: "The metadata of the Label.",
-				Computed: true,
+				Computed:            true,
 			},
 			"device_groups": schema.ListNestedAttribute{
 				MarkdownDescription: "The Device Groups that belong to the Label",
-				Computed: true,
+				Computed:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.Int64Attribute{
 							MarkdownDescription: "Device Group ID.",
-							Computed: true,
+							Computed:            true,
 						},
 						"name": schema.StringAttribute{
 							MarkdownDescription: "Device Group name.",
-							Computed: true,
+							Computed:            true,
 						},
 					},
 				},

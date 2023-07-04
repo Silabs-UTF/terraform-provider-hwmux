@@ -33,7 +33,6 @@ type nestedDeviceModel struct {
 	ID types.Int64 `tfsdk:"id"`
 }
 
-
 func (d *DeviceGroupDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_device_group"
 }
@@ -54,16 +53,16 @@ func (d *DeviceGroupDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 			"metadata": schema.StringAttribute{
 				MarkdownDescription: "The metadata of the Device Group.",
-				Computed: true,
+				Computed:            true,
 			},
 			"devices": schema.ListNestedAttribute{
 				MarkdownDescription: "The devices that belong to the Device Group",
-				Computed: true,
+				Computed:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.Int64Attribute{
 							MarkdownDescription: "Device ID.",
-							Computed: true,
+							Computed:            true,
 						},
 					},
 				},

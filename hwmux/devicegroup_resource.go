@@ -70,18 +70,18 @@ func (r *DeviceGroupResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 			"metadata": schema.StringAttribute{
 				MarkdownDescription: "The metadata of the Device Group.",
-				Computed: true,
-				Optional: true,
+				Computed:            true,
+				Optional:            true,
 			},
 			"devices": schema.SetAttribute{
 				MarkdownDescription: "The devices that belong to the Device Group.",
-				Required: true,
-				ElementType: types.Int64Type,
+				Required:            true,
+				ElementType:         types.Int64Type,
 			},
 			"permission_groups": schema.SetAttribute{
 				MarkdownDescription: "Which permission groups can access the resource.",
-				Required: true,
-				ElementType: types.StringType,
+				Required:            true,
+				ElementType:         types.StringType,
 			},
 			"last_updated": schema.StringAttribute{
 				Description: "Timestamp of the last Terraform update of the resource.",

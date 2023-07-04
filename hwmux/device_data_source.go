@@ -61,7 +61,7 @@ func (d *DeviceDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 			},
 			"is_wstk": schema.BoolAttribute{
 				MarkdownDescription: "If the device is a WSTK.",
-				Computed: true,
+				Computed:            true,
 			},
 			"wstk_part": schema.StringAttribute{
 				MarkdownDescription: "The part number of the wstk the device is on.",
@@ -69,11 +69,11 @@ func (d *DeviceDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 			},
 			"online": schema.BoolAttribute{
 				MarkdownDescription: "If the device is online.",
-				Computed: true,
+				Computed:            true,
 			},
 			"metadata": schema.StringAttribute{
 				MarkdownDescription: "The metadata of the device.",
-				Computed: true,
+				Computed:            true,
 			},
 		},
 	}

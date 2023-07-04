@@ -5,7 +5,6 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 )
 
-
 const (
 	providerConfig = `
 provider "hwmux" {
