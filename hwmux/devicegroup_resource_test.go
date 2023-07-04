@@ -29,6 +29,7 @@ resource "hwmux_device_group" "test" {
 					resource.TestCheckResourceAttr("hwmux_device_group.test", "metadata", "{}"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("hwmux_device_group.test", "id"),
+					resource.TestCheckResourceAttrSet("hwmux_device_group.test", "enable_ahs"),
 					resource.TestCheckResourceAttrSet("hwmux_device_group.test", "last_updated"),
 				),
 			},
@@ -47,6 +48,7 @@ resource "hwmux_device_group" "test" {
 resource "hwmux_device_group" "test" {
 	name     = "test_dg"
 	devices = [1]
+	enable_ahs = true
 	permission_groups = ["Staff users"]
 }
 `,
@@ -56,6 +58,7 @@ resource "hwmux_device_group" "test" {
 					resource.TestCheckResourceAttr("hwmux_device_group.test", "devices.0", "1"),
 					resource.TestCheckResourceAttr("hwmux_device_group.test", "permission_groups.#", "1"),
 					resource.TestCheckResourceAttr("hwmux_device_group.test", "permission_groups.0", "Staff users"),
+					resource.TestCheckResourceAttr("hwmux_device_group.test", "enable_ahs", "true"),
 					// Verify the device_group item has Computed attributes filled.
 					resource.TestCheckResourceAttr("hwmux_device_group.test", "metadata", "{}"),
 				),

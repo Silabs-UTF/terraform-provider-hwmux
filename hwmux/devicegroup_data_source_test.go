@@ -18,6 +18,7 @@ func TestAccDeviceGroupDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.hwmux_device_group.test", "name", "group0"),
 					resource.TestCheckResourceAttr("data.hwmux_device_group.test", "id", "1"),
 					// ensure dynamic attributes are populated
+					resource.TestCheckResourceAttrSet("data.hwmux_device_group.test", "enable_ahs"),
 					resource.TestCheckResourceAttrSet("data.hwmux_device_group.test", "metadata"),
 					resource.TestCheckResourceAttrSet("data.hwmux_device_group.test", "devices.0.id"),
 				),

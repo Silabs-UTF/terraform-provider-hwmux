@@ -39,6 +39,7 @@ type DeviceGroupResourceModel struct {
 	Metadata         types.String   `tfsdk:"metadata"`
 	Devices          []types.Int64  `tfsdk:"devices"`
 	PermissionGroups []types.String `tfsdk:"permission_groups"`
+	Enable_ahs       types.Bool     `tfsdk:"enable_ahs"`
 	LastUpdated      types.String   `tfsdk:"last_updated"`
 }
 
@@ -82,6 +83,11 @@ func (r *DeviceGroupResource) Schema(ctx context.Context, req resource.SchemaReq
 				MarkdownDescription: "Which permission groups can access the resource.",
 				Required:            true,
 				ElementType:         types.StringType,
+			},
+			"enable_ahs": schema.BoolAttribute{
+				MarkdownDescription: "Enable the Automated Health Service",
+				Computed:            true,
+				Optional:            true,
 			},
 			"last_updated": schema.StringAttribute{
 				Description: "Timestamp of the last Terraform update of the resource.",
@@ -271,6 +277,10 @@ func createDeviceGroupFromPlan(plan *DeviceGroupResourceModel, diagnostics *diag
 	deviceGroupSerializer := hwmux.NewDeviceGroupSerializerWithDevicePkWithDefaults()
 	deviceGroupSerializer.SetName(plan.Name.ValueString())
 
+	if !plan.Enable_ahs.IsUnknown() {
+		deviceGroupSerializer.SetEnableAhs(plan.Enable_ahs.ValueBool())
+	}
+
 	if !plan.Metadata.IsUnknown() {
 		metadata, errorMet := UnmarshalMetadataSetError(plan.Metadata.ValueString(), diagnostics, "deviceGroup")
 		if errorMet != nil {
@@ -301,6 +311,7 @@ func updateDGModelFromResponse(deviceGroup *hwmux.DeviceGroupSerializerWithDevic
 	// Map response body to schema and populate Computed attribute values
 	plan.ID = types.StringValue(strconv.Itoa(int(deviceGroup.GetId())))
 	plan.Name = types.StringValue(deviceGroup.GetName())
+	plan.Enable_ahs = types.BoolValue(deviceGroup.GetEnableAhs())
 
 	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), diagnostics, "deviceGroup", &plan.Metadata)
 	if err != nil {
