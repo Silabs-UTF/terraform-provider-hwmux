@@ -404,9 +404,11 @@ func updateDeviceModelFromResponse(device *hwmux.WriteOnlyDevice, plan *DeviceRe
 	}
 
 	plan.Part = types.StringValue(device.Part)
-	
+
 	if device.GetWstkPart() != "" {
-		plan.Part = types.StringValue(device.GetWstkPart())
+		plan.Wstk_part = types.StringValue(device.GetWstkPart())
+	} else {
+		plan.Wstk_part = types.StringNull()
 	}
 
 	permissionGroups, err := GetPermissionGroupsForDevice(client, diagnostics, device.GetId())
