@@ -134,11 +134,13 @@ func TestAccDeviceResourceNoSnOrName(t *testing.T) {
 resource "hwmux_device" "test" {
     part = "Part_no_0"
     room = "Room_0"
+    wstk_part = "Part_no_0"
     permission_groups = ["Staff users"]
 }
 `,
                 Check: resource.ComposeAggregateTestCheckFunc(
 					resource.TestCheckResourceAttr("hwmux_device.test", "part", "Part_no_0"),
+                    resource.TestCheckResourceAttr("hwmux_device.test", "wstk_part", "Part_no_0"),
 					resource.TestCheckResourceAttr("hwmux_device.test", "room", "Room_0"),
                     resource.TestCheckResourceAttr("hwmux_device.test", "permission_groups.#", "1"),
                     resource.TestCheckResourceAttr("hwmux_device.test", "permission_groups.0", "Staff users"),
