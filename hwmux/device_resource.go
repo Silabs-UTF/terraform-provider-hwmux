@@ -89,13 +89,13 @@ func (r *DeviceResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				MarkdownDescription: "The room where the device is.",
 				Required:            true,
 			},
-			"wstk_part": schema.StringAttribute{
-				MarkdownDescription: "The part number of the WSTK the device is on.",
-				Required:            false,
-			},
 			"is_wstk": schema.BoolAttribute{
 				MarkdownDescription: "If the device is a WSTK.",
 				Computed:            true,
+				Optional:            true,
+			},
+			"wstk_part": schema.StringAttribute{
+				MarkdownDescription: "The part number of the WSTK the device is on.",
 				Optional:            true,
 			},
 			"online": schema.BoolAttribute{
@@ -214,6 +214,11 @@ func (r *DeviceResource) Read(ctx context.Context, req resource.ReadRequest, res
 		data.Sn_or_name = types.StringNull()
 	}
 	data.Is_wstk = types.BoolValue(device.GetIsWstk())
+	if device.GetWstkPart() != "" {
+		data.Wstk_part = types.StringValue(device.GetWstkPart())
+	} else {
+		data.Wstk_part = types.StringNull()
+	}
 	if device.GetUri() != "" {
 		data.Uri = types.StringValue(device.GetUri())
 	} else {

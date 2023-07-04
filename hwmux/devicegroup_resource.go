@@ -180,6 +180,7 @@ func (r *DeviceGroupResource) Read(ctx context.Context, req resource.ReadRequest
 	// Map response body to model
 	data.ID = types.StringValue(strconv.Itoa(int(deviceGroup.GetId())))
 	data.Name = types.StringValue(deviceGroup.GetName())
+	data.Enable_ahs = types.BoolValue(deviceGroup.GetEnableAhs())
 
 	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), &resp.Diagnostics, "Device Group", &data.Metadata)
 	if err != nil {

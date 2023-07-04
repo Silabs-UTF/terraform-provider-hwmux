@@ -18,7 +18,7 @@ func TestAccDeviceDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.hwmux_device.test", "sn_or_name", "sn0"),
 					resource.TestCheckResourceAttr("data.hwmux_device.test", "id", "1"),
 					resource.TestCheckResourceAttr("data.hwmux_device.test", "is_wstk", "false"),
-					resource.TestCheckResourceAttr("data.hwmux_device.test", "wstk_part", ""),
+					resource.TestCheckResourceAttr("data.hwmux_device.test", "wstk_part", "Part_no_0"),
 					resource.TestCheckResourceAttr("data.hwmux_device.test", "online", "true"),
 					resource.TestCheckResourceAttr("data.hwmux_device.test", "part", "Part_no_0"),
 					resource.TestCheckResourceAttr("data.hwmux_device.test", "uri", "0"),
