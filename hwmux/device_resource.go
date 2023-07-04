@@ -40,6 +40,7 @@ type DeviceResourceModel struct {
 	Online           types.Bool   `tfsdk:"online"`
 	Metadata         types.String `tfsdk:"metadata"`
 	Part             types.String `tfsdk:"part"`
+	Wstk_part        types.String `tfsdk:"wstk_part"`
 	Room             types.String `tfsdk:"room"`
 	LocationMetadata types.String `tfsdk:"location_metadata"`
 	PermissionGroups []types.String `tfsdk:"permission_groups"`
@@ -87,6 +88,10 @@ func (r *DeviceResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			"room": schema.StringAttribute{
 				MarkdownDescription: "The room where the device is.",
 				Required:            true,
+			},
+			"wstk_part": schema.StringAttribute{
+				MarkdownDescription: "The part number of the WSTK the device is on.",
+				Required:            false,
 			},
 			"is_wstk": schema.BoolAttribute{
 				MarkdownDescription: "If the device is a WSTK.",
@@ -320,6 +325,10 @@ func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnosti
 	writeOnlyDevice := hwmux.NewWriteOnlyDeviceWithDefaults()
 	writeOnlyDevice.SetPart(plan.Part.ValueString())
 
+	if !plan.Wstk_part.IsUnknown() {
+		writeOnlyDevice.SetWstkPart(plan.Wstk_part.ValueString())
+	}
+
 	if !plan.Online.IsUnknown() {
 		writeOnlyDevice.SetOnline(plan.Online.ValueBool())
 	} else {
@@ -395,6 +404,10 @@ func updateDeviceModelFromResponse(device *hwmux.WriteOnlyDevice, plan *DeviceRe
 	}
 
 	plan.Part = types.StringValue(device.Part)
+	
+	if device.GetWstkPart() != "" {
+		plan.Part = types.StringValue(device.GetWstkPart())
+	}
 
 	permissionGroups, err := GetPermissionGroupsForDevice(client, diagnostics, device.GetId())
 	if err != nil {
