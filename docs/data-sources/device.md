@@ -27,5 +27,6 @@ Device data source
 - `part` (String) The part number of the device.
 - `sn_or_name` (String) Device name. Must be unique.
 - `uri` (String) The URI or IP address of the device.
+- `wstk_part` (String) The part number of the wstk the device is on.
 
 
