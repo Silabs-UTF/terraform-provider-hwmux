@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Silabs-UTF/hwmux-client-golang"
+	"github.com/Silabs-UTF/hwmux-client-golang/v2"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -39,6 +39,7 @@ type DeviceGroupResourceModel struct {
 	Metadata         types.String   `tfsdk:"metadata"`
 	Devices          []types.Int64  `tfsdk:"devices"`
 	PermissionGroups []types.String `tfsdk:"permission_groups"`
+	Enable_ahs       types.Bool     `tfsdk:"enable_ahs"`
 	LastUpdated      types.String   `tfsdk:"last_updated"`
 }
 
@@ -70,18 +71,23 @@ func (r *DeviceGroupResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 			"metadata": schema.StringAttribute{
 				MarkdownDescription: "The metadata of the Device Group.",
-				Computed: true,
-				Optional: true,
+				Computed:            true,
+				Optional:            true,
 			},
 			"devices": schema.SetAttribute{
 				MarkdownDescription: "The devices that belong to the Device Group.",
-				Required: true,
-				ElementType: types.Int64Type,
+				Required:            true,
+				ElementType:         types.Int64Type,
 			},
 			"permission_groups": schema.SetAttribute{
 				MarkdownDescription: "Which permission groups can access the resource.",
-				Required: true,
-				ElementType: types.StringType,
+				Required:            true,
+				ElementType:         types.StringType,
+			},
+			"enable_ahs": schema.BoolAttribute{
+				MarkdownDescription: "Enable the Automated Health Service",
+				Computed:            true,
+				Optional:            true,
 			},
 			"last_updated": schema.StringAttribute{
 				Description: "Timestamp of the last Terraform update of the resource.",
@@ -174,6 +180,7 @@ func (r *DeviceGroupResource) Read(ctx context.Context, req resource.ReadRequest
 	// Map response body to model
 	data.ID = types.StringValue(strconv.Itoa(int(deviceGroup.GetId())))
 	data.Name = types.StringValue(deviceGroup.GetName())
+	data.Enable_ahs = types.BoolValue(deviceGroup.GetEnableAhs())
 
 	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), &resp.Diagnostics, "Device Group", &data.Metadata)
 	if err != nil {
@@ -271,6 +278,10 @@ func createDeviceGroupFromPlan(plan *DeviceGroupResourceModel, diagnostics *diag
 	deviceGroupSerializer := hwmux.NewDeviceGroupSerializerWithDevicePkWithDefaults()
 	deviceGroupSerializer.SetName(plan.Name.ValueString())
 
+	if !plan.Enable_ahs.IsUnknown() {
+		deviceGroupSerializer.SetEnableAhs(plan.Enable_ahs.ValueBool())
+	}
+
 	if !plan.Metadata.IsUnknown() {
 		metadata, errorMet := UnmarshalMetadataSetError(plan.Metadata.ValueString(), diagnostics, "deviceGroup")
 		if errorMet != nil {
@@ -301,6 +312,7 @@ func updateDGModelFromResponse(deviceGroup *hwmux.DeviceGroupSerializerWithDevic
 	// Map response body to schema and populate Computed attribute values
 	plan.ID = types.StringValue(strconv.Itoa(int(deviceGroup.GetId())))
 	plan.Name = types.StringValue(deviceGroup.GetName())
+	plan.Enable_ahs = types.BoolValue(deviceGroup.GetEnableAhs())
 
 	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), diagnostics, "deviceGroup", &plan.Metadata)
 	if err != nil {

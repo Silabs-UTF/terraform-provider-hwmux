@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Silabs-UTF/hwmux-client-golang"
+	"github.com/Silabs-UTF/hwmux-client-golang/v2"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -28,7 +28,6 @@ type RoomDataSourceModel struct {
 	Site     types.String `tfsdk:"site"`
 	Metadata types.String `tfsdk:"metadata"`
 }
-
 
 func (d *RoomDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_room"
@@ -54,7 +53,7 @@ func (d *RoomDataSource) Schema(ctx context.Context, req datasource.SchemaReques
 			},
 			"metadata": schema.StringAttribute{
 				MarkdownDescription: "The metadata of the Room.",
-				Computed: true,
+				Computed:            true,
 			},
 		},
 	}

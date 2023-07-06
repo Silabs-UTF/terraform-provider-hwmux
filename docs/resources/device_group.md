@@ -18,6 +18,7 @@ resource "hwmux_device_group" "new_testbed" {
   metadata          = jsonencode(yamldecode(file("example.yaml")))
   devices           = [1, 2]
   permission_groups = ["Example group name"]
+  enable_ahs        = true
 }
 ```
 
@@ -32,6 +33,7 @@ resource "hwmux_device_group" "new_testbed" {
 
 ### Optional
 
+- `enable_ahs` (Boolean) Enable the Automated Health Service
 - `metadata` (String) The metadata of the Device Group.
 
 ### Read-Only

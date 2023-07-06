@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/Silabs-UTF/hwmux-client-golang"
+	"github.com/Silabs-UTF/hwmux-client-golang/v2"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
 
@@ -97,7 +97,6 @@ func GetPermissionGroupsForDevice(client *hwmux.APIClient, diagnostics *diag.Dia
 	return objectPermsToUGList(objectPerms), nil
 }
 
-
 // Get permission groups for a given Label
 func GetPermissionGroupsForLabel(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	[]string, error) {
@@ -105,7 +104,6 @@ func GetPermissionGroupsForLabel(client *hwmux.APIClient, diagnostics *diag.Diag
 	handleError(httpRes, err, diagnostics, "Permissions for Label")
 	return objectPermsToUGList(objectPerms), nil
 }
-
 
 // Returns all user group names from the given object permissions object
 func objectPermsToUGList(objectPerms *hwmux.ObjectPermissions) []string {
@@ -118,7 +116,6 @@ func objectPermsToUGList(objectPerms *hwmux.ObjectPermissions) []string {
 	return permissionGroups
 }
 
-
 // factored out error handling code for API retrieve calls
 func handleError(httpRes *http.Response, err error, diagnostics *diag.Diagnostics, name string) {
 	if err != nil {
@@ -127,15 +124,14 @@ func handleError(httpRes *http.Response, err error, diagnostics *diag.Diagnostic
 			errorStr += "\nHwmux response body:" + BodyToString(&httpRes.Body)
 		}
 		diagnostics.AddError(
-			"Unable to Read " + name,
+			"Unable to Read "+name,
 			errorStr,
 		)
 	}
 }
 
-
 // modify user permissions. Sets diagnostics and returns error
-func processUserPermissions(user *hwmux.LoggedInUser, plan *UserResourceModel, diagnostics *diag.Diagnostics, client *hwmux.APIClient) (error) {
+func processUserPermissions(user *hwmux.LoggedInUser, plan *UserResourceModel, diagnostics *diag.Diagnostics, client *hwmux.APIClient) error {
 	desired := make(map[string]bool)
 	existing := make(map[string]bool)
 
@@ -159,7 +155,7 @@ func processUserPermissions(user *hwmux.LoggedInUser, plan *UserResourceModel, d
 					errorStr += "\nHwmux response body:" + BodyToString(&httpRes.Body)
 				}
 				diagnostics.AddError(
-					"Unable to remove user " + user.GetUsername() + " from group " + groupName,
+					"Unable to remove user "+user.GetUsername()+" from group "+groupName,
 					errorStr,
 				)
 				return err
@@ -176,7 +172,7 @@ func processUserPermissions(user *hwmux.LoggedInUser, plan *UserResourceModel, d
 					errorStr += "\nHwmux response body:" + BodyToString(&httpRes.Body)
 				}
 				diagnostics.AddError(
-					"Unable to add user " + user.GetUsername() + " to group " + groupName,
+					"Unable to add user "+user.GetUsername()+" to group "+groupName,
 					errorStr,
 				)
 				return err

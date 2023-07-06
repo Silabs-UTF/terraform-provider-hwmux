@@ -42,6 +42,7 @@ resource "hwmux_device" "example" {
 - `online` (Boolean) If the device is online.
 - `sn_or_name` (String) Device name.
 - `uri` (String) The URI or IP address of the device.
+- `wstk_part` (String) The part number of the WSTK the device is on.
 
 ### Read-Only
 

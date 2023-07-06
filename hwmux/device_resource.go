@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Silabs-UTF/hwmux-client-golang"
+	"github.com/Silabs-UTF/hwmux-client-golang/v2"
 	"github.com/hashicorp/terraform-plugin-framework-validators/stringvalidator"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
@@ -33,17 +33,18 @@ type DeviceResource struct {
 
 // DeviceResourceModel describes the resource data model.
 type DeviceResourceModel struct {
-	ID               types.String `tfsdk:"id"`
-	Sn_or_name       types.String `tfsdk:"sn_or_name"`
-	Is_wstk          types.Bool   `tfsdk:"is_wstk"`
-	Uri              types.String `tfsdk:"uri"`
-	Online           types.Bool   `tfsdk:"online"`
-	Metadata         types.String `tfsdk:"metadata"`
-	Part             types.String `tfsdk:"part"`
-	Room             types.String `tfsdk:"room"`
-	LocationMetadata types.String `tfsdk:"location_metadata"`
+	ID               types.String   `tfsdk:"id"`
+	Sn_or_name       types.String   `tfsdk:"sn_or_name"`
+	Is_wstk          types.Bool     `tfsdk:"is_wstk"`
+	Uri              types.String   `tfsdk:"uri"`
+	Online           types.Bool     `tfsdk:"online"`
+	Metadata         types.String   `tfsdk:"metadata"`
+	Part             types.String   `tfsdk:"part"`
+	Wstk_part        types.String   `tfsdk:"wstk_part"`
+	Room             types.String   `tfsdk:"room"`
+	LocationMetadata types.String   `tfsdk:"location_metadata"`
 	PermissionGroups []types.String `tfsdk:"permission_groups"`
-	LastUpdated      types.String `tfsdk:"last_updated"`
+	LastUpdated      types.String   `tfsdk:"last_updated"`
 }
 
 func (r *DeviceResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -65,7 +66,7 @@ func (r *DeviceResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			},
 			"sn_or_name": schema.StringAttribute{
 				Optional:            true,
-				Computed: 			 true,
+				Computed:            true,
 				MarkdownDescription: "Device name.",
 				Validators: []validator.String{
 					stringvalidator.LengthAtLeast(1),
@@ -90,28 +91,32 @@ func (r *DeviceResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			},
 			"is_wstk": schema.BoolAttribute{
 				MarkdownDescription: "If the device is a WSTK.",
-				Computed: true,
-				Optional: true,
+				Computed:            true,
+				Optional:            true,
+			},
+			"wstk_part": schema.StringAttribute{
+				MarkdownDescription: "The part number of the WSTK the device is on.",
+				Optional:            true,
 			},
 			"online": schema.BoolAttribute{
 				MarkdownDescription: "If the device is online.",
-				Computed: true,
-				Optional: true,
+				Computed:            true,
+				Optional:            true,
 			},
 			"metadata": schema.StringAttribute{
 				MarkdownDescription: "The metadata of the device.",
-				Computed: true,
-				Optional: true,
+				Computed:            true,
+				Optional:            true,
 			},
 			"location_metadata": schema.StringAttribute{
 				MarkdownDescription: "The location metadata of the device.",
-				Computed: true,
-				Optional: true,
+				Computed:            true,
+				Optional:            true,
 			},
 			"permission_groups": schema.SetAttribute{
 				MarkdownDescription: "Which permission groups can access the resource.",
-				Required: true,
-				ElementType: types.StringType,
+				Required:            true,
+				ElementType:         types.StringType,
 			},
 			"last_updated": schema.StringAttribute{
 				Description: "Timestamp of the last Terraform update of the resource.",
@@ -209,6 +214,11 @@ func (r *DeviceResource) Read(ctx context.Context, req resource.ReadRequest, res
 		data.Sn_or_name = types.StringNull()
 	}
 	data.Is_wstk = types.BoolValue(device.GetIsWstk())
+	if device.GetWstkPart() != "" {
+		data.Wstk_part = types.StringValue(device.GetWstkPart())
+	} else {
+		data.Wstk_part = types.StringNull()
+	}
 	if device.GetUri() != "" {
 		data.Uri = types.StringValue(device.GetUri())
 	} else {
@@ -320,6 +330,10 @@ func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnosti
 	writeOnlyDevice := hwmux.NewWriteOnlyDeviceWithDefaults()
 	writeOnlyDevice.SetPart(plan.Part.ValueString())
 
+	if !plan.Wstk_part.IsUnknown() {
+		writeOnlyDevice.SetWstkPart(plan.Wstk_part.ValueString())
+	}
+
 	if !plan.Online.IsUnknown() {
 		writeOnlyDevice.SetOnline(plan.Online.ValueBool())
 	} else {
@@ -366,7 +380,7 @@ func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnosti
 }
 
 // Map response body to model and populate Computed attribute values
-func updateDeviceModelFromResponse(device *hwmux.WriteOnlyDevice, plan *DeviceResourceModel, diagnostics *diag.Diagnostics, 
+func updateDeviceModelFromResponse(device *hwmux.WriteOnlyDevice, plan *DeviceResourceModel, diagnostics *diag.Diagnostics,
 	client *hwmux.APIClient) (err error) {
 	// Map response body to schema and populate Computed attribute values
 	plan.ID = types.StringValue(strconv.Itoa(int(device.GetId())))
@@ -395,6 +409,12 @@ func updateDeviceModelFromResponse(device *hwmux.WriteOnlyDevice, plan *DeviceRe
 	}
 
 	plan.Part = types.StringValue(device.Part)
+
+	if device.GetWstkPart() != "" {
+		plan.Wstk_part = types.StringValue(device.GetWstkPart())
+	} else {
+		plan.Wstk_part = types.StringNull()
+	}
 
 	permissionGroups, err := GetPermissionGroupsForDevice(client, diagnostics, device.GetId())
 	if err != nil {

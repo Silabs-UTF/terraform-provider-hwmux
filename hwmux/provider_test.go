@@ -5,12 +5,11 @@ import (
 	"github.com/hashicorp/terraform-plugin-go/tfprotov6"
 )
 
-
 const (
 	providerConfig = `
 provider "hwmux" {
   host  = "http://localhost"
-  token = "6cbeb43325c187390ec505d3fff1d8488bfb806a"
+  token = "a86690a0a1e93c139db8858e039104b30ba38d2c"
 }
 `
 )

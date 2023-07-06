@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Silabs-UTF/hwmux-client-golang"
+	"github.com/Silabs-UTF/hwmux-client-golang/v2"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/datasource/schema"
 	"github.com/hashicorp/terraform-plugin-framework/types"
@@ -23,16 +23,16 @@ type DeviceGroupDataSource struct {
 
 // deviceGroupDataSourceModel maps the data source schema data.
 type DeviceGroupDataSourceModel struct {
-	ID       types.Int64         `tfsdk:"id"`
-	Name     types.String        `tfsdk:"name"`
-	Devices  []nestedDeviceModel `tfsdk:"devices"`
-	Metadata types.String        `tfsdk:"metadata"`
+	ID         types.Int64         `tfsdk:"id"`
+	Name       types.String        `tfsdk:"name"`
+	Devices    []nestedDeviceModel `tfsdk:"devices"`
+	Enable_ahs types.Bool          `tfsdk:"enable_ahs"`
+	Metadata   types.String        `tfsdk:"metadata"`
 }
 
 type nestedDeviceModel struct {
 	ID types.Int64 `tfsdk:"id"`
 }
-
 
 func (d *DeviceGroupDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
 	resp.TypeName = req.ProviderTypeName + "_device_group"
@@ -54,19 +54,23 @@ func (d *DeviceGroupDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 			"metadata": schema.StringAttribute{
 				MarkdownDescription: "The metadata of the Device Group.",
-				Computed: true,
+				Computed:            true,
 			},
 			"devices": schema.ListNestedAttribute{
 				MarkdownDescription: "The devices that belong to the Device Group",
-				Computed: true,
+				Computed:            true,
 				NestedObject: schema.NestedAttributeObject{
 					Attributes: map[string]schema.Attribute{
 						"id": schema.Int64Attribute{
 							MarkdownDescription: "Device ID.",
-							Computed: true,
+							Computed:            true,
 						},
 					},
 				},
+			},
+			"enable_ahs": schema.BoolAttribute{
+				MarkdownDescription: "Enable the Automated Health Service",
+				Computed:            true,
 			},
 		},
 	}
@@ -110,6 +114,7 @@ func (d *DeviceGroupDataSource) Read(ctx context.Context, req datasource.ReadReq
 	// Map response body to model
 	data.ID = types.Int64Value(int64(deviceGroup.GetId()))
 	data.Name = types.StringValue(deviceGroup.GetName())
+	data.Enable_ahs = types.BoolValue(deviceGroup.GetEnableAhs())
 
 	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), &resp.Diagnostics, "deviceGroup", &data.Metadata)
 	if err != nil {

@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/Silabs-UTF/hwmux-client-golang"
+	"github.com/Silabs-UTF/hwmux-client-golang/v2"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/resource"
@@ -31,10 +31,10 @@ type PermissionGroupResource struct {
 
 // PermissionGroupResourceModel describes the resource data model.
 type PermissionGroupResourceModel struct {
-	ID			types.String   `tfsdk:"id"`
-	Name        types.String   `tfsdk:"name"`
-	Permissions types.Set `tfsdk:"permissions"`
-	LastUpdated types.String   `tfsdk:"last_updated"`
+	ID          types.String `tfsdk:"id"`
+	Name        types.String `tfsdk:"name"`
+	Permissions types.Set    `tfsdk:"permissions"`
+	LastUpdated types.String `tfsdk:"last_updated"`
 }
 
 func (r *PermissionGroupResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -60,12 +60,12 @@ func (r *PermissionGroupResource) Schema(ctx context.Context, req resource.Schem
 			},
 			"permissions": schema.SetAttribute{
 				MarkdownDescription: "The permissions that this permission group has.",
-				ElementType: types.StringType,
-				Computed: true,
+				ElementType:         types.StringType,
+				Computed:            true,
 			},
 			"last_updated": schema.StringAttribute{
 				Description: "Timestamp of the last Terraform update of the resource.",
-				Computed: true,
+				Computed:    true,
 			},
 		},
 	}

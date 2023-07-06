@@ -4,7 +4,7 @@ import (
 	"context"
 	"os"
 
-	"github.com/Silabs-UTF/hwmux-client-golang"
+	"github.com/Silabs-UTF/hwmux-client-golang/v2"
 	"github.com/hashicorp/terraform-plugin-framework/datasource"
 	"github.com/hashicorp/terraform-plugin-framework/path"
 	"github.com/hashicorp/terraform-plugin-framework/provider"
@@ -46,8 +46,8 @@ func (p *HwmuxProvider) Schema(ctx context.Context, req provider.SchemaRequest, 
 			},
 			"token": schema.StringAttribute{
 				MarkdownDescription: "The Hwmux API token. May also be provided via HWMUX_TOKEN environment variable.",
-				Optional: true,
-				Sensitive: true,
+				Optional:            true,
+				Sensitive:           true,
 			},
 		},
 	}
@@ -136,7 +136,7 @@ func (p *HwmuxProvider) Configure(ctx context.Context, req provider.ConfigureReq
 	clientConfig.AddDefaultHeader("Authorization", "Token "+token)
 	clientConfig.Servers = hwmux.ServerConfigurations{hwmux.ServerConfiguration{URL: host}}
 	client := hwmux.NewAPIClient(clientConfig)
-	
+
 	resp.DataSourceData = client
 	resp.ResourceData = client
 }
