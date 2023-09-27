@@ -339,6 +339,7 @@ func (r *DeviceResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
+	// if it's offline, set it back online to remove the reservation for the offline status
 	if !data.Online.ValueBool() {
 		id, _ := strconv.Atoi(data.ID.ValueString())
 		r.setDeviceStatusFromPlan(&resp.Diagnostics, int32(id), hwmux.ACTIVE)
