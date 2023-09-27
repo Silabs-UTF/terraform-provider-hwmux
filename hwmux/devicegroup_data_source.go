@@ -27,6 +27,7 @@ type DeviceGroupDataSourceModel struct {
 	Name       types.String        `tfsdk:"name"`
 	Devices    []nestedDeviceModel `tfsdk:"devices"`
 	Enable_ahs types.Bool          `tfsdk:"enable_ahs"`
+	Enable_ahs_actions types.Bool `tfsdk:"enable_ahs"`
 	Metadata   types.String        `tfsdk:"metadata"`
 }
 
@@ -70,6 +71,10 @@ func (d *DeviceGroupDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 			"enable_ahs": schema.BoolAttribute{
 				MarkdownDescription: "Enable the Automated Health Service",
+				Computed:            true,
+			},
+			"enable_ahs_actions": schema.BoolAttribute{
+				MarkdownDescription: "Allow the Automated Health Service to take DeviceGroups offline when they are unhealthy.",
 				Computed:            true,
 			},
 		},
