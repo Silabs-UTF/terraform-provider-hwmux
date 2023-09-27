@@ -175,6 +175,18 @@ func (r *DeviceResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
+	// Handle the online field, which is remapped to status
+	if !data.Online.IsUnknown() && !data.Online.ValueBool() {
+		statusReq, err := r.setDeviceStatusFromPlan(&resp.Diagnostics, writeOnlyDevice.GetId(), hwmux.DISABLED)
+		if err != nil {
+			resp.Diagnostics.AddError("Error updating device status", err.Error())
+			return
+		}
+
+		writeOnlyDevice.SetOnline(data.Online.ValueBool())
+		writeOnlyDevice.SetStatus(statusReq.Status)
+	}
+
 	// Map response body to schema and populate Computed attribute values
 	// set model based on response
 	err = updateDeviceModelFromResponse(writeOnlyDevice, data, &resp.Diagnostics, r.client)
@@ -278,6 +290,24 @@ func (r *DeviceResource) Update(ctx context.Context, req resource.UpdateRequest,
 	id, _ := strconv.Atoi(data.ID.ValueString())
 	writeOnlyDevice, httpRes, err := r.client.DevicesApi.DevicesUpdate(context.Background(), int32(id)).WriteOnlyDevice(*writeOnlyDevice).Execute()
 
+	// Handle the online field, which is remapped to status
+	//  will only make a change if there is a difference between the API-provided value and the desired one
+	if (data.Online.IsUnknown() && !writeOnlyDevice.GetOnline()) || (!data.Online.IsUnknown() && data.Online.ValueBool() != writeOnlyDevice.GetOnline()) {
+		status := hwmux.ACTIVE
+		if !data.Online.IsUnknown() && !data.Online.ValueBool() {
+			status = hwmux.DISABLED
+		}
+
+		statusReq, err := r.setDeviceStatusFromPlan(&resp.Diagnostics, writeOnlyDevice.GetId(), status)
+		if err != nil {
+			resp.Diagnostics.AddError("Error updating device status", err.Error())
+			return
+		}
+
+		writeOnlyDevice.SetOnline(data.Online.ValueBool())
+		writeOnlyDevice.SetStatus(statusReq.Status)
+	}
+
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating device "+data.ID.String(),
@@ -309,6 +339,11 @@ func (r *DeviceResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		return
 	}
 
+	if !data.Online.ValueBool() {
+		id, _ := strconv.Atoi(data.ID.ValueString())
+		r.setDeviceStatusFromPlan(&resp.Diagnostics, int32(id), hwmux.ACTIVE)
+	}
+
 	// Delete existing
 	id, _ := strconv.Atoi(data.ID.ValueString())
 	httpRes, err := r.client.DevicesApi.DevicesDestroy(context.Background(), int32(id)).Execute()
@@ -325,6 +360,23 @@ func (r *DeviceResource) ImportState(ctx context.Context, req resource.ImportSta
 	resource.ImportStatePassthroughID(ctx, path.Root("id"), req, resp)
 }
 
+func (r *DeviceResource) setDeviceStatusFromPlan(diagnostics *diag.Diagnostics, id int32, status hwmux.StatusEnum) (*hwmux.ResourceStatusRequest, error) {
+	
+	statusRequest := hwmux.NewResourceStatusRequestWithDefaults()
+	statusRequest.SetComment("Disabled via Terraform")
+	statusRequest.SetStatus(status)
+
+	resourceStatRequest, httpRes, err := r.client.DevicesApi.DevicesStatusCreate(context.Background(), id).ResourceStatusRequest(*statusRequest).Execute()
+	if err != nil {
+		diagnostics.AddError(
+			"Error setting device status " + strconv.Itoa(int(id)),
+			"Could not update device, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
+		)
+		return resourceStatRequest, err
+	}
+	return resourceStatRequest, nil
+}
+
 // Create a writeOnlyDevice based on a terraform plan
 func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnostics) (*hwmux.WriteOnlyDevice, error) {
 	writeOnlyDevice := hwmux.NewWriteOnlyDeviceWithDefaults()
@@ -334,11 +386,6 @@ func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnosti
 		writeOnlyDevice.SetWstkPart(plan.Wstk_part.ValueString())
 	}
 
-	if !plan.Online.IsUnknown() {
-		writeOnlyDevice.SetOnline(plan.Online.ValueBool())
-	} else {
-		writeOnlyDevice.SetOnline(true)
-	}
 	if !plan.Is_wstk.IsUnknown() {
 		writeOnlyDevice.SetIsWstk(plan.Is_wstk.ValueBool())
 	}

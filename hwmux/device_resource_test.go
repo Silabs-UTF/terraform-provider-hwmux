@@ -74,6 +74,33 @@ resource "hwmux_device" "test" {
 					resource.TestCheckResourceAttr("hwmux_device.test", "location_metadata", "{}"),
 				),
 			},
+			// (Delete testing automatically occurs in TestCase)
+			// Test unsetting the online field, which should set online back to true
+			{
+				Config: providerConfig + `
+resource "hwmux_device" "test" {
+	sn_or_name = "test_device"
+	uri = "88.8.8.8"
+	part = "Part_no_0"
+	room = "Room_0"
+    permission_groups = ["All users"]
+}
+`,
+				Check: resource.ComposeAggregateTestCheckFunc(
+					// Verify first device item updated
+					resource.TestCheckResourceAttr("hwmux_device.test", "sn_or_name", "test_device"),
+					resource.TestCheckResourceAttr("hwmux_device.test", "uri", "88.8.8.8"),
+					resource.TestCheckResourceAttr("hwmux_device.test", "part", "Part_no_0"),
+					resource.TestCheckResourceAttr("hwmux_device.test", "room", "Room_0"),
+					resource.TestCheckResourceAttr("hwmux_device.test", "online", "true"),
+					resource.TestCheckResourceAttr("hwmux_device.test", "permission_groups.#", "1"),
+					resource.TestCheckResourceAttr("hwmux_device.test", "permission_groups.0", "All users"),
+					// Verify first coffee item has Computed attributes updated.
+					resource.TestCheckResourceAttr("hwmux_device.test", "is_wstk", "false"),
+					resource.TestCheckResourceAttr("hwmux_device.test", "metadata", "{}"),
+					resource.TestCheckResourceAttr("hwmux_device.test", "location_metadata", "{}"),
+				),
+			},
 			// Delete testing automatically occurs in TestCase
 		},
 	})
