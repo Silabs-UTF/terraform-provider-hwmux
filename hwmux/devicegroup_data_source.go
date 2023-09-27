@@ -23,12 +23,12 @@ type DeviceGroupDataSource struct {
 
 // deviceGroupDataSourceModel maps the data source schema data.
 type DeviceGroupDataSourceModel struct {
-	ID         types.Int64         `tfsdk:"id"`
-	Name       types.String        `tfsdk:"name"`
-	Devices    []nestedDeviceModel `tfsdk:"devices"`
-	Enable_ahs types.Bool          `tfsdk:"enable_ahs"`
-	Enable_ahs_actions types.Bool `tfsdk:"enable_ahs_actions"`
-	Metadata   types.String        `tfsdk:"metadata"`
+	ID                 types.Int64         `tfsdk:"id"`
+	Name               types.String        `tfsdk:"name"`
+	Devices            []nestedDeviceModel `tfsdk:"devices"`
+	Enable_ahs         types.Bool          `tfsdk:"enable_ahs"`
+	Enable_ahs_actions types.Bool          `tfsdk:"enable_ahs_actions"`
+	Metadata           types.String        `tfsdk:"metadata"`
 }
 
 type nestedDeviceModel struct {
