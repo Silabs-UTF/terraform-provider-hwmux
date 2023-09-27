@@ -27,7 +27,7 @@ type DeviceGroupDataSourceModel struct {
 	Name       types.String        `tfsdk:"name"`
 	Devices    []nestedDeviceModel `tfsdk:"devices"`
 	Enable_ahs types.Bool          `tfsdk:"enable_ahs"`
-	Enable_ahs_actions types.Bool `tfsdk:"enable_ahs"`
+	Enable_ahs_actions types.Bool `tfsdk:"enable_ahs_actions"`
 	Metadata   types.String        `tfsdk:"metadata"`
 }
 
@@ -120,6 +120,7 @@ func (d *DeviceGroupDataSource) Read(ctx context.Context, req datasource.ReadReq
 	data.ID = types.Int64Value(int64(deviceGroup.GetId()))
 	data.Name = types.StringValue(deviceGroup.GetName())
 	data.Enable_ahs = types.BoolValue(deviceGroup.GetEnableAhs())
+	data.Enable_ahs_actions = types.BoolValue(deviceGroup.GetEnableAhsActions())
 
 	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), &resp.Diagnostics, "deviceGroup", &data.Metadata)
 	if err != nil {
