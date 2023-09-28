@@ -255,10 +255,7 @@ func (r *DeviceResource) Read(ctx context.Context, req resource.ReadRequest, res
 
 	data.Part = types.StringValue(device.Part.GetPartNo())
 
-	permissionGroups, err := GetPermissionGroupsForDevice(r.client, &resp.Diagnostics, device.GetId())
-	if err != nil {
-		return
-	}
+	permissionGroups := device.GetPermissionGroups()
 	data.PermissionGroups = make([]types.String, len(permissionGroups))
 	for i, aGroup := range permissionGroups {
 		data.PermissionGroups[i] = types.StringValue(aGroup)

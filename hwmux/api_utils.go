@@ -12,7 +12,7 @@ import (
 // Get device, err and set error
 func GetDevice(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	device *hwmux.DeviceSerializerPublic, httpRes *http.Response, err error) {
-	device, httpRes, err = client.DevicesApi.DevicesRetrieve(context.Background(), id).Execute()
+	device, httpRes, err = client.DevicesApi.DevicesRetrieve(context.Background(), id).IncludePermissionGroups(true).Execute()
 	handleError(httpRes, err, diagnostics, "Device")
 	return
 }
