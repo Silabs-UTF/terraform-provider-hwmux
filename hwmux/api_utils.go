@@ -20,7 +20,7 @@ func GetDevice(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32)
 // Get deviceGroup, err and set error
 func GetDeviceGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	deviceGroup *hwmux.DeviceGroup, httpRes *http.Response, err error) {
-	deviceGroup, httpRes, err = client.GroupsApi.GroupsRetrieve(context.Background(), id).Execute()
+	deviceGroup, httpRes, err = client.GroupsApi.GroupsRetrieve(context.Background(), id).IncludePermissionGroups(true).Execute()
 	handleError(httpRes, err, diagnostics, "Device Group")
 	return
 }
@@ -28,7 +28,7 @@ func GetDeviceGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id i
 // Get label, err and set error
 func GetLabel(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	label *hwmux.Label, httpRes *http.Response, err error) {
-	label, httpRes, err = client.LabelsApi.LabelsRetrieve(context.Background(), id).Execute()
+	label, httpRes, err = client.LabelsApi.LabelsRetrieve(context.Background(), id).IncludePermissionGroups(true).Execute()
 	handleError(httpRes, err, diagnostics, "Label")
 	return
 }

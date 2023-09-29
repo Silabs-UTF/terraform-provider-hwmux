@@ -185,10 +185,7 @@ func (r *LabelResource) Read(ctx context.Context, req resource.ReadRequest, resp
 		data.DeviceGroups[i] = types.Int64Value(int64(deviceGroup))
 	}
 
-	permissionGroups, err := GetPermissionGroupsForLabel(r.client, &resp.Diagnostics, label.GetId())
-	if err != nil {
-		return
-	}
+	permissionGroups := label.GetPermissionGroups()
 	data.PermissionGroups = make([]types.String, len(permissionGroups))
 	for i, aGroup := range permissionGroups {
 		data.PermissionGroups[i] = types.StringValue(aGroup)
