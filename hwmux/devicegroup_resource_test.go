@@ -30,6 +30,7 @@ resource "hwmux_device_group" "test" {
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("hwmux_device_group.test", "id"),
 					resource.TestCheckResourceAttrSet("hwmux_device_group.test", "enable_ahs"),
+					resource.TestCheckResourceAttrSet("hwmux_device_group.test", "enable_ahs_actions"),
 					resource.TestCheckResourceAttrSet("hwmux_device_group.test", "last_updated"),
 				),
 			},
