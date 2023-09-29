@@ -14,11 +14,12 @@ Device Group resource.
 
 ```terraform
 resource "hwmux_device_group" "new_testbed" {
-  name              = "name_no_spaces"
-  metadata          = jsonencode(yamldecode(file("example.yaml")))
-  devices           = [1, 2]
-  permission_groups = ["Example group name"]
-  enable_ahs        = true
+  name               = "name_no_spaces"
+  metadata           = jsonencode(yamldecode(file("example.yaml")))
+  devices            = [1, 2]
+  permission_groups  = ["Example group name"]
+  enable_ahs         = true
+  enable_ahs_actions = true
 }
 ```
 
@@ -34,6 +35,7 @@ resource "hwmux_device_group" "new_testbed" {
 ### Optional
 
 - `enable_ahs` (Boolean) Enable the Automated Health Service
+- `enable_ahs_actions` (Boolean) Allow the Automated Health Service to take DeviceGroups offline when they are unhealthy.
 - `metadata` (String) The metadata of the Device Group.
 
 ### Read-Only

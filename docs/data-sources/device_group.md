@@ -23,6 +23,7 @@ DeviceGroup data source
 
 - `devices` (Attributes List) The devices that belong to the Device Group (see [below for nested schema](#nestedatt--devices))
 - `enable_ahs` (Boolean) Enable the Automated Health Service
+- `enable_ahs_actions` (Boolean) Allow the Automated Health Service to take DeviceGroups offline when they are unhealthy.
 - `metadata` (String) The metadata of the Device Group.
 - `name` (String) Device Group name. Must be unique.
 

@@ -74,7 +74,7 @@ resource "hwmux_device" "test" {
 					resource.TestCheckResourceAttr("hwmux_device.test", "location_metadata", "{}"),
 				),
 			},
-			// Delete testing automatically occurs in TestCase
+			// (Delete testing automatically occurs in TestCase)
 		},
 	})
 }

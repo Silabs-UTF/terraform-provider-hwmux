@@ -34,13 +34,14 @@ type DeviceGroupResource struct {
 
 // DeviceGroupResourceModel describes the resource data model.
 type DeviceGroupResourceModel struct {
-	ID               types.String   `tfsdk:"id"`
-	Name             types.String   `tfsdk:"name"`
-	Metadata         types.String   `tfsdk:"metadata"`
-	Devices          []types.Int64  `tfsdk:"devices"`
-	PermissionGroups []types.String `tfsdk:"permission_groups"`
-	Enable_ahs       types.Bool     `tfsdk:"enable_ahs"`
-	LastUpdated      types.String   `tfsdk:"last_updated"`
+	ID                 types.String   `tfsdk:"id"`
+	Name               types.String   `tfsdk:"name"`
+	Metadata           types.String   `tfsdk:"metadata"`
+	Devices            []types.Int64  `tfsdk:"devices"`
+	PermissionGroups   []types.String `tfsdk:"permission_groups"`
+	Enable_ahs         types.Bool     `tfsdk:"enable_ahs"`
+	Enable_ahs_actions types.Bool     `tfsdk:"enable_ahs_actions"`
+	LastUpdated        types.String   `tfsdk:"last_updated"`
 }
 
 func (r *DeviceGroupResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -86,6 +87,11 @@ func (r *DeviceGroupResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 			"enable_ahs": schema.BoolAttribute{
 				MarkdownDescription: "Enable the Automated Health Service",
+				Computed:            true,
+				Optional:            true,
+			},
+			"enable_ahs_actions": schema.BoolAttribute{
+				MarkdownDescription: "Allow the Automated Health Service to take DeviceGroups offline when they are unhealthy.",
 				Computed:            true,
 				Optional:            true,
 			},
@@ -181,6 +187,7 @@ func (r *DeviceGroupResource) Read(ctx context.Context, req resource.ReadRequest
 	data.ID = types.StringValue(strconv.Itoa(int(deviceGroup.GetId())))
 	data.Name = types.StringValue(deviceGroup.GetName())
 	data.Enable_ahs = types.BoolValue(deviceGroup.GetEnableAhs())
+	data.Enable_ahs_actions = types.BoolValue(deviceGroup.GetEnableAhsActions())
 
 	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), &resp.Diagnostics, "Device Group", &data.Metadata)
 	if err != nil {
@@ -192,10 +199,7 @@ func (r *DeviceGroupResource) Read(ctx context.Context, req resource.ReadRequest
 		data.Devices[i] = types.Int64Value(int64(device.GetId()))
 	}
 
-	permissionGroups, err := GetPermissionGroupsForDeviceGroup(r.client, &resp.Diagnostics, deviceGroup.GetId())
-	if err != nil {
-		return
-	}
+	permissionGroups := deviceGroup.GetPermissionGroups()
 	data.PermissionGroups = make([]types.String, len(permissionGroups))
 	for i, aGroup := range permissionGroups {
 		data.PermissionGroups[i] = types.StringValue(aGroup)
@@ -281,6 +285,9 @@ func createDeviceGroupFromPlan(plan *DeviceGroupResourceModel, diagnostics *diag
 	if !plan.Enable_ahs.IsUnknown() {
 		deviceGroupSerializer.SetEnableAhs(plan.Enable_ahs.ValueBool())
 	}
+	if !plan.Enable_ahs_actions.IsUnknown() {
+		deviceGroupSerializer.SetEnableAhsActions(plan.Enable_ahs_actions.ValueBool())
+	}
 
 	if !plan.Metadata.IsUnknown() {
 		metadata, errorMet := UnmarshalMetadataSetError(plan.Metadata.ValueString(), diagnostics, "deviceGroup")
@@ -313,6 +320,7 @@ func updateDGModelFromResponse(deviceGroup *hwmux.DeviceGroupSerializerWithDevic
 	plan.ID = types.StringValue(strconv.Itoa(int(deviceGroup.GetId())))
 	plan.Name = types.StringValue(deviceGroup.GetName())
 	plan.Enable_ahs = types.BoolValue(deviceGroup.GetEnableAhs())
+	plan.Enable_ahs_actions = types.BoolValue(deviceGroup.GetEnableAhsActions())
 
 	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), diagnostics, "deviceGroup", &plan.Metadata)
 	if err != nil {

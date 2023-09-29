@@ -23,11 +23,12 @@ type DeviceGroupDataSource struct {
 
 // deviceGroupDataSourceModel maps the data source schema data.
 type DeviceGroupDataSourceModel struct {
-	ID         types.Int64         `tfsdk:"id"`
-	Name       types.String        `tfsdk:"name"`
-	Devices    []nestedDeviceModel `tfsdk:"devices"`
-	Enable_ahs types.Bool          `tfsdk:"enable_ahs"`
-	Metadata   types.String        `tfsdk:"metadata"`
+	ID                 types.Int64         `tfsdk:"id"`
+	Name               types.String        `tfsdk:"name"`
+	Devices            []nestedDeviceModel `tfsdk:"devices"`
+	Enable_ahs         types.Bool          `tfsdk:"enable_ahs"`
+	Enable_ahs_actions types.Bool          `tfsdk:"enable_ahs_actions"`
+	Metadata           types.String        `tfsdk:"metadata"`
 }
 
 type nestedDeviceModel struct {
@@ -70,6 +71,10 @@ func (d *DeviceGroupDataSource) Schema(ctx context.Context, req datasource.Schem
 			},
 			"enable_ahs": schema.BoolAttribute{
 				MarkdownDescription: "Enable the Automated Health Service",
+				Computed:            true,
+			},
+			"enable_ahs_actions": schema.BoolAttribute{
+				MarkdownDescription: "Allow the Automated Health Service to take DeviceGroups offline when they are unhealthy.",
 				Computed:            true,
 			},
 		},
@@ -115,6 +120,7 @@ func (d *DeviceGroupDataSource) Read(ctx context.Context, req datasource.ReadReq
 	data.ID = types.Int64Value(int64(deviceGroup.GetId()))
 	data.Name = types.StringValue(deviceGroup.GetName())
 	data.Enable_ahs = types.BoolValue(deviceGroup.GetEnableAhs())
+	data.Enable_ahs_actions = types.BoolValue(deviceGroup.GetEnableAhsActions())
 
 	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), &resp.Diagnostics, "deviceGroup", &data.Metadata)
 	if err != nil {
