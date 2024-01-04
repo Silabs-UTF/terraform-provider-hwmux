@@ -20,23 +20,23 @@ resource "hwmux_device_group" "test" {
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hwmux_device_group.test", "name", "test_dg"),
-					resource.TestCheckResourceAttr("hwmux_device_group.test", "devices.#", "2"),
-					resource.TestCheckResourceAttr("hwmux_device_group.test", "devices.0", "1"),
-					resource.TestCheckResourceAttr("hwmux_device_group.test", "permission_groups.#", "1"),
-					resource.TestCheckResourceAttr("hwmux_device_group.test", "permission_groups.0", "All users"),
+					resource.TestCheckResourceAttr(testResourceAttrName, "name", "test_dg"),
+					resource.TestCheckResourceAttr(testResourceAttrName, "devices.#", "2"),
+					resource.TestCheckResourceAttr(testResourceAttrName, "devices.0", "1"),
+					resource.TestCheckResourceAttr(testResourceAttrName, "permission_groups.#", "1"),
+					resource.TestCheckResourceAttr(testResourceAttrName, "permission_groups.0", "All users"),
 					// Verify the device_group item has Computed attributes filled.
-					resource.TestCheckResourceAttr("hwmux_device_group.test", "metadata", "{}"),
+					resource.TestCheckResourceAttr(testResourceAttrName, "metadata", "{}"),
 					// Verify dynamic values have any value set in the state.
-					resource.TestCheckResourceAttrSet("hwmux_device_group.test", "id"),
-					resource.TestCheckResourceAttrSet("hwmux_device_group.test", "enable_ahs"),
-					resource.TestCheckResourceAttrSet("hwmux_device_group.test", "enable_ahs_actions"),
-					resource.TestCheckResourceAttrSet("hwmux_device_group.test", "last_updated"),
+					resource.TestCheckResourceAttrSet(testResourceAttrName, "id"),
+					resource.TestCheckResourceAttrSet(testResourceAttrName, "enable_ahs"),
+					resource.TestCheckResourceAttrSet(testResourceAttrName, "enable_ahs_actions"),
+					resource.TestCheckResourceAttrSet(testResourceAttrName, "last_updated"),
 				),
 			},
 			// ImportState testing
 			{
-				ResourceName:      "hwmux_device_group.test",
+				ResourceName:      testResourceAttrName,
 				ImportState:       true,
 				ImportStateVerify: true,
 				// The last_updated attribute does not exist in the HashiCups
@@ -51,19 +51,21 @@ resource "hwmux_device_group" "test" {
 	devices = [1]
 	enable_ahs = true
 	enable_ahs_actions = true
+	enable_ahs_cas = true
 	permission_groups = ["Staff users"]
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
-					resource.TestCheckResourceAttr("hwmux_device_group.test", "name", "test_dg"),
-					resource.TestCheckResourceAttr("hwmux_device_group.test", "devices.#", "1"),
-					resource.TestCheckResourceAttr("hwmux_device_group.test", "devices.0", "1"),
-					resource.TestCheckResourceAttr("hwmux_device_group.test", "permission_groups.#", "1"),
-					resource.TestCheckResourceAttr("hwmux_device_group.test", "permission_groups.0", "Staff users"),
-					resource.TestCheckResourceAttr("hwmux_device_group.test", "enable_ahs", "true"),
-					resource.TestCheckResourceAttr("hwmux_device_group.test", "enable_ahs_actions", "true"),
+					resource.TestCheckResourceAttr(testResourceAttrName, "name", "test_dg"),
+					resource.TestCheckResourceAttr(testResourceAttrName, "devices.#", "1"),
+					resource.TestCheckResourceAttr(testResourceAttrName, "devices.0", "1"),
+					resource.TestCheckResourceAttr(testResourceAttrName, "permission_groups.#", "1"),
+					resource.TestCheckResourceAttr(testResourceAttrName, "permission_groups.0", "Staff users"),
+					resource.TestCheckResourceAttr(testResourceAttrName, "enable_ahs", "true"),
+					resource.TestCheckResourceAttr(testResourceAttrName, "enable_ahs_actions", "true"),
+					resource.TestCheckResourceAttr(testResourceAttrName, "enable_ahs_cas", "true"),
 					// Verify the device_group item has Computed attributes filled.
-					resource.TestCheckResourceAttr("hwmux_device_group.test", "metadata", "{}"),
+					resource.TestCheckResourceAttr(testResourceAttrName, "metadata", "{}"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

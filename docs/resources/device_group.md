@@ -35,7 +35,9 @@ resource "hwmux_device_group" "new_testbed" {
 ### Optional
 
 - `enable_ahs` (Boolean) Enable the Automated Health Service
-- `enable_ahs_actions` (Boolean) Allow the Automated Health Service to take DeviceGroups offline when they are unhealthy.
+- `enable_ahs_actions` (Boolean) Allow the Automated Health Service to take 
+DeviceGroups offline when they are unhealthy.
+- `enable_ahs_cas` (Boolean) Allow the automated Health Service to take corrective actions
 - `metadata` (String) The metadata of the Device Group.
 
 ### Read-Only

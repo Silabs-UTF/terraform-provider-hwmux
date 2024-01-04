@@ -42,6 +42,7 @@ type DeviceGroupResourceModel struct {
 	Enable_ahs         types.Bool     `tfsdk:"enable_ahs"`
 	Enable_ahs_actions types.Bool     `tfsdk:"enable_ahs_actions"`
 	LastUpdated        types.String   `tfsdk:"last_updated"`
+	Enable_ahs_cas     types.Bool     `tfsdk:"enable_ahs_cas"`
 }
 
 func (r *DeviceGroupResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -98,6 +99,11 @@ func (r *DeviceGroupResource) Schema(ctx context.Context, req resource.SchemaReq
 			"last_updated": schema.StringAttribute{
 				Description: "Timestamp of the last Terraform update of the resource.",
 				Computed:    true,
+			},
+			"enable_ahs_cas": schema.BoolAttribute{
+				MarkdownDescription: "Allow the Automated Health Service to take corrective actions.",
+				Computed:            true,
+				Optional:            true,
 			},
 		},
 	}
