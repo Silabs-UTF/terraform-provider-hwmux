@@ -148,7 +148,7 @@ func (r *UserResource) Create(ctx context.Context, req resource.CreateRequest, r
 	}
 
 	// create new user
-	userSerializer, httpRes, err := r.client.UserApi.UserCreate(context.Background()).LoggedInUser(*userSerializer).Execute()
+	userSerializer, httpRes, err := r.client.UserAPI.UserCreate(context.Background()).LoggedInUser(*userSerializer).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -225,7 +225,7 @@ func (r *UserResource) Update(ctx context.Context, req resource.UpdateRequest, r
 	}
 
 	// update user
-	userSerializer, httpRes, err := r.client.UserApi.UserUpdate(context.Background(), data.ID.ValueString()).LoggedInUser(*userSerializer).Execute()
+	userSerializer, httpRes, err := r.client.UserAPI.UserUpdate(context.Background(), data.ID.ValueString()).LoggedInUser(*userSerializer).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -265,7 +265,7 @@ func (r *UserResource) Delete(ctx context.Context, req resource.DeleteRequest, r
 	}
 
 	// Delete existing
-	httpRes, err := r.client.UserApi.UserDestroy(context.Background(), data.ID.ValueString()).Execute()
+	httpRes, err := r.client.UserAPI.UserDestroy(context.Background(), data.ID.ValueString()).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting User",

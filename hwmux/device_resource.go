@@ -165,7 +165,7 @@ func (r *DeviceResource) Create(ctx context.Context, req resource.CreateRequest,
 	}
 
 	// create new device
-	writeOnlyDevice, httpRes, err := r.client.DevicesApi.DevicesCreate(context.Background()).WriteOnlyDevice(*writeOnlyDevice).Execute()
+	writeOnlyDevice, httpRes, err := r.client.DevicesAPI.DevicesCreate(context.Background()).WriteOnlyDevice(*writeOnlyDevice).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -285,7 +285,7 @@ func (r *DeviceResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 	// update device
 	id, _ := strconv.Atoi(data.ID.ValueString())
-	writeOnlyDevice, httpRes, err := r.client.DevicesApi.DevicesUpdate(context.Background(), int32(id)).WriteOnlyDevice(*writeOnlyDevice).Execute()
+	writeOnlyDevice, httpRes, err := r.client.DevicesAPI.DevicesUpdate(context.Background(), int32(id)).WriteOnlyDevice(*writeOnlyDevice).Execute()
 
 	// Handle the online field, which is remapped to status
 	//  will only make a change if there is a difference between the API-provided value and the desired one
@@ -344,7 +344,7 @@ func (r *DeviceResource) Delete(ctx context.Context, req resource.DeleteRequest,
 
 	// Delete existing
 	id, _ := strconv.Atoi(data.ID.ValueString())
-	httpRes, err := r.client.DevicesApi.DevicesDestroy(context.Background(), int32(id)).Execute()
+	httpRes, err := r.client.DevicesAPI.DevicesDestroy(context.Background(), int32(id)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Device",
@@ -359,15 +359,15 @@ func (r *DeviceResource) ImportState(ctx context.Context, req resource.ImportSta
 }
 
 func (r *DeviceResource) setDeviceStatusFromPlan(diagnostics *diag.Diagnostics, id int32, status hwmux.StatusEnum) (*hwmux.ResourceStatusRequest, error) {
-	
+
 	statusRequest := hwmux.NewResourceStatusRequestWithDefaults()
 	statusRequest.SetComment("Disabled via Terraform")
 	statusRequest.SetStatus(status)
 
-	resourceStatRequest, httpRes, err := r.client.DevicesApi.DevicesStatusCreate(context.Background(), id).ResourceStatusRequest(*statusRequest).Execute()
+	resourceStatRequest, httpRes, err := r.client.DevicesAPI.DevicesStatusCreate(context.Background(), id).ResourceStatusRequest(*statusRequest).Execute()
 	if err != nil {
 		diagnostics.AddError(
-			"Error setting device status " + strconv.Itoa(int(id)),
+			"Error setting device status "+strconv.Itoa(int(id)),
 			"Could not update device, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
 		)
 		return resourceStatRequest, err

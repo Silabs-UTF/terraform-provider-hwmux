@@ -110,7 +110,7 @@ func (r *PermissionGroupResource) Create(ctx context.Context, req resource.Creat
 	}
 
 	// create new permissionGroup
-	permissionGroupSerializer, httpRes, err := r.client.PermissionsApi.PermissionsGroupsCreate(context.Background()).PermissionGroup(*permissionGroupSerializer).Execute()
+	permissionGroupSerializer, httpRes, err := r.client.PermissionsAPI.PermissionsGroupsCreate(context.Background()).PermissionGroup(*permissionGroupSerializer).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -177,7 +177,7 @@ func (r *PermissionGroupResource) Update(ctx context.Context, req resource.Updat
 
 	// TODO: implement when available
 	// update permissionGroup
-	permissionGroupSerializer, httpRes, err := r.client.PermissionsApi.PermissionsGroupsUpdate(context.Background(), state.ID.ValueString()).PermissionGroup(*permissionGroupSerializer).Execute()
+	permissionGroupSerializer, httpRes, err := r.client.PermissionsAPI.PermissionsGroupsUpdate(context.Background(), state.ID.ValueString()).PermissionGroup(*permissionGroupSerializer).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -211,7 +211,7 @@ func (r *PermissionGroupResource) Delete(ctx context.Context, req resource.Delet
 	}
 
 	// Delete existing
-	httpRes, err := r.client.PermissionsApi.PermissionsGroupsDestroy(context.Background(), data.ID.ValueString()).Execute()
+	httpRes, err := r.client.PermissionsAPI.PermissionsGroupsDestroy(context.Background(), data.ID.ValueString()).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting PermissionGroup",
