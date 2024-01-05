@@ -295,6 +295,9 @@ func createDeviceGroupFromPlan(plan *DeviceGroupResourceModel, diagnostics *diag
 	if !plan.Enable_ahs_actions.IsUnknown() {
 		deviceGroupSerializer.SetEnableAhsActions(plan.Enable_ahs_actions.ValueBool())
 	}
+	if !plan.Enable_ahs_cas.IsUnknown() {
+		deviceGroupSerializer.SetEnableAhsCas(plan.Enable_ahs_cas.ValueBool())
+	}
 
 	if !plan.Metadata.IsUnknown() {
 		metadata, errorMet := UnmarshalMetadataSetError(plan.Metadata.ValueString(), diagnostics, "deviceGroup")
