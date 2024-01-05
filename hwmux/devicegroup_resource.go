@@ -328,6 +328,7 @@ func updateDGModelFromResponse(deviceGroup *hwmux.DeviceGroupSerializerWithDevic
 	plan.Name = types.StringValue(deviceGroup.GetName())
 	plan.Enable_ahs = types.BoolValue(deviceGroup.GetEnableAhs())
 	plan.Enable_ahs_actions = types.BoolValue(deviceGroup.GetEnableAhsActions())
+	plan.Enable_ahs_cas = types.BoolValue(deviceGroup.GetEnableAhsCas())
 
 	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), diagnostics, "deviceGroup", &plan.Metadata)
 	if err != nil {
