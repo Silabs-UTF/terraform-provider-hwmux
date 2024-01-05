@@ -194,6 +194,7 @@ func (r *DeviceGroupResource) Read(ctx context.Context, req resource.ReadRequest
 	data.Name = types.StringValue(deviceGroup.GetName())
 	data.Enable_ahs = types.BoolValue(deviceGroup.GetEnableAhs())
 	data.Enable_ahs_actions = types.BoolValue(deviceGroup.GetEnableAhsActions())
+	data.Enable_ahs_cas = types.BoolValue(deviceGroup.GetEnableAhsCas())
 
 	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), &resp.Diagnostics, "Device Group", &data.Metadata)
 	if err != nil {
