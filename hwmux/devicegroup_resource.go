@@ -96,14 +96,14 @@ func (r *DeviceGroupResource) Schema(ctx context.Context, req resource.SchemaReq
 				Computed:            true,
 				Optional:            true,
 			},
-			"last_updated": schema.StringAttribute{
-				Description: "Timestamp of the last Terraform update of the resource.",
-				Computed:    true,
-			},
 			"enable_ahs_cas": schema.BoolAttribute{
 				MarkdownDescription: "Allow the Automated Health Service to take corrective actions.",
 				Computed:            true,
 				Optional:            true,
+			},
+			"last_updated": schema.StringAttribute{
+				Description: "Timestamp of the last Terraform update of the resource.",
+				Computed:    true,
 			},
 		},
 	}
