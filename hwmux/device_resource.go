@@ -359,7 +359,7 @@ func (r *DeviceResource) ImportState(ctx context.Context, req resource.ImportSta
 }
 
 func (r *DeviceResource) setDeviceStatusFromPlan(diagnostics *diag.Diagnostics, id int32, status hwmux.StatusEnum) (*hwmux.ResourceStatusRequest, error) {
-	
+
 	statusRequest := hwmux.NewResourceStatusRequestWithDefaults()
 	statusRequest.SetComment("Disabled via Terraform")
 	statusRequest.SetStatus(status)
@@ -367,7 +367,7 @@ func (r *DeviceResource) setDeviceStatusFromPlan(diagnostics *diag.Diagnostics, 
 	resourceStatRequest, httpRes, err := r.client.DevicesApi.DevicesStatusCreate(context.Background(), id).ResourceStatusRequest(*statusRequest).Execute()
 	if err != nil {
 		diagnostics.AddError(
-			"Error setting device status " + strconv.Itoa(int(id)),
+			"Error setting device status "+strconv.Itoa(int(id)),
 			"Could not update device, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
 		)
 		return resourceStatRequest, err

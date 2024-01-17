@@ -5,4 +5,5 @@ resource "hwmux_device_group" "new_testbed" {
   permission_groups  = ["Example group name"]
   enable_ahs         = true
   enable_ahs_actions = true
+  enable_ahs_cas     = true
 }

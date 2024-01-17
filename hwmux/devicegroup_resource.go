@@ -42,6 +42,7 @@ type DeviceGroupResourceModel struct {
 	Enable_ahs         types.Bool     `tfsdk:"enable_ahs"`
 	Enable_ahs_actions types.Bool     `tfsdk:"enable_ahs_actions"`
 	LastUpdated        types.String   `tfsdk:"last_updated"`
+	Enable_ahs_cas     types.Bool     `tfsdk:"enable_ahs_cas"`
 }
 
 func (r *DeviceGroupResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -92,6 +93,11 @@ func (r *DeviceGroupResource) Schema(ctx context.Context, req resource.SchemaReq
 			},
 			"enable_ahs_actions": schema.BoolAttribute{
 				MarkdownDescription: "Allow the Automated Health Service to take DeviceGroups offline when they are unhealthy.",
+				Computed:            true,
+				Optional:            true,
+			},
+			"enable_ahs_cas": schema.BoolAttribute{
+				MarkdownDescription: "Allow the Automated Health Service to take corrective actions.",
 				Computed:            true,
 				Optional:            true,
 			},
@@ -188,6 +194,7 @@ func (r *DeviceGroupResource) Read(ctx context.Context, req resource.ReadRequest
 	data.Name = types.StringValue(deviceGroup.GetName())
 	data.Enable_ahs = types.BoolValue(deviceGroup.GetEnableAhs())
 	data.Enable_ahs_actions = types.BoolValue(deviceGroup.GetEnableAhsActions())
+	data.Enable_ahs_cas = types.BoolValue(deviceGroup.GetEnableAhsCas())
 
 	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), &resp.Diagnostics, "Device Group", &data.Metadata)
 	if err != nil {
@@ -288,6 +295,9 @@ func createDeviceGroupFromPlan(plan *DeviceGroupResourceModel, diagnostics *diag
 	if !plan.Enable_ahs_actions.IsUnknown() {
 		deviceGroupSerializer.SetEnableAhsActions(plan.Enable_ahs_actions.ValueBool())
 	}
+	if !plan.Enable_ahs_cas.IsUnknown() {
+		deviceGroupSerializer.SetEnableAhsCas(plan.Enable_ahs_cas.ValueBool())
+	}
 
 	if !plan.Metadata.IsUnknown() {
 		metadata, errorMet := UnmarshalMetadataSetError(plan.Metadata.ValueString(), diagnostics, "deviceGroup")
@@ -321,6 +331,7 @@ func updateDGModelFromResponse(deviceGroup *hwmux.DeviceGroupSerializerWithDevic
 	plan.Name = types.StringValue(deviceGroup.GetName())
 	plan.Enable_ahs = types.BoolValue(deviceGroup.GetEnableAhs())
 	plan.Enable_ahs_actions = types.BoolValue(deviceGroup.GetEnableAhsActions())
+	plan.Enable_ahs_cas = types.BoolValue(deviceGroup.GetEnableAhsCas())
 
 	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), diagnostics, "deviceGroup", &plan.Metadata)
 	if err != nil {

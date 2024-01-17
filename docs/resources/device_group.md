@@ -20,6 +20,7 @@ resource "hwmux_device_group" "new_testbed" {
   permission_groups  = ["Example group name"]
   enable_ahs         = true
   enable_ahs_actions = true
+  enable_ahs_cas     = true
 }
 ```
 
@@ -36,6 +37,7 @@ resource "hwmux_device_group" "new_testbed" {
 
 - `enable_ahs` (Boolean) Enable the Automated Health Service
 - `enable_ahs_actions` (Boolean) Allow the Automated Health Service to take DeviceGroups offline when they are unhealthy.
+- `enable_ahs_cas` (Boolean) Allow the Automated Health Service to take corrective actions.
 - `metadata` (String) The metadata of the Device Group.
 
 ### Read-Only
