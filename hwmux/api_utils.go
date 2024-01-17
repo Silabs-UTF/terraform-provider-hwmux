@@ -12,7 +12,7 @@ import (
 // Get device, err and set error
 func GetDevice(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	device *hwmux.DeviceSerializerPublic, httpRes *http.Response, err error) {
-	device, httpRes, err = client.DevicesAPI.DevicesRetrieve(context.Background(), id).IncludePermissionGroups(true).Execute()
+	device, httpRes, err = client.DevicesApi.DevicesRetrieve(context.Background(), id).IncludePermissionGroups(true).Execute()
 	handleError(httpRes, err, diagnostics, "Device")
 	return
 }
@@ -20,7 +20,7 @@ func GetDevice(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32)
 // Get deviceGroup, err and set error
 func GetDeviceGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	deviceGroup *hwmux.DeviceGroup, httpRes *http.Response, err error) {
-	deviceGroup, httpRes, err = client.GroupsAPI.GroupsRetrieve(context.Background(), id).IncludePermissionGroups(true).Execute()
+	deviceGroup, httpRes, err = client.GroupsApi.GroupsRetrieve(context.Background(), id).IncludePermissionGroups(true).Execute()
 	handleError(httpRes, err, diagnostics, "Device Group")
 	return
 }
@@ -28,7 +28,7 @@ func GetDeviceGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id i
 // Get label, err and set error
 func GetLabel(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	label *hwmux.Label, httpRes *http.Response, err error) {
-	label, httpRes, err = client.LabelsAPI.LabelsRetrieve(context.Background(), id).IncludePermissionGroups(true).Execute()
+	label, httpRes, err = client.LabelsApi.LabelsRetrieve(context.Background(), id).IncludePermissionGroups(true).Execute()
 	handleError(httpRes, err, diagnostics, "Label")
 	return
 }
@@ -36,7 +36,7 @@ func GetLabel(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) 
 // Get part, err and set error
 func GetPart(client *hwmux.APIClient, diagnostics *diag.Diagnostics, part_no string) (
 	part *hwmux.Part, httpRes *http.Response, err error) {
-	part, httpRes, err = client.PartsAPI.PartsRetrieve(context.Background(), part_no).Execute()
+	part, httpRes, err = client.PartsApi.PartsRetrieve(context.Background(), part_no).Execute()
 	handleError(httpRes, err, diagnostics, "Part")
 	return
 }
@@ -44,7 +44,7 @@ func GetPart(client *hwmux.APIClient, diagnostics *diag.Diagnostics, part_no str
 // Get room, err and set error
 func GetRoom(client *hwmux.APIClient, diagnostics *diag.Diagnostics, name string) (
 	room *hwmux.Room, httpRes *http.Response, err error) {
-	room, httpRes, err = client.RoomsAPI.RoomsRetrieve(context.Background(), name).Execute()
+	room, httpRes, err = client.RoomsApi.RoomsRetrieve(context.Background(), name).Execute()
 	handleError(httpRes, err, diagnostics, "Room")
 	return
 }
@@ -52,7 +52,7 @@ func GetRoom(client *hwmux.APIClient, diagnostics *diag.Diagnostics, name string
 // Get permission group, err and set error
 func GetPermissionGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, name string) (
 	permissionGroup *hwmux.PermissionGroup, httpRes *http.Response, err error) {
-	permissionGroup, httpRes, err = client.PermissionsAPI.PermissionsGroupsRetrieve(context.Background(), name).Execute()
+	permissionGroup, httpRes, err = client.PermissionsApi.PermissionsGroupsRetrieve(context.Background(), name).Execute()
 	handleError(httpRes, err, diagnostics, "Permission Group")
 	return
 }
@@ -60,7 +60,7 @@ func GetPermissionGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, 
 // Get token, err and set error
 func GetToken(client *hwmux.APIClient, diagnostics *diag.Diagnostics, username string) (
 	token *hwmux.Token, httpRes *http.Response, err error) {
-	token, httpRes, err = client.UserAPI.UserTokenRetrieve(context.Background(), username).Execute()
+	token, httpRes, err = client.UserApi.UserTokenRetrieve(context.Background(), username).Execute()
 	handleError(httpRes, err, diagnostics, "Token")
 	return
 }
@@ -68,7 +68,7 @@ func GetToken(client *hwmux.APIClient, diagnostics *diag.Diagnostics, username s
 // Get user, err and set error
 func GetUser(client *hwmux.APIClient, diagnostics *diag.Diagnostics, username string) (
 	user *hwmux.LoggedInUser, httpRes *http.Response, err error) {
-	user, httpRes, err = client.UserAPI.UserRetrieve(context.Background(), username).Execute()
+	user, httpRes, err = client.UserApi.UserRetrieve(context.Background(), username).Execute()
 	handleError(httpRes, err, diagnostics, "User")
 	return
 }
@@ -76,7 +76,7 @@ func GetUser(client *hwmux.APIClient, diagnostics *diag.Diagnostics, username st
 // Get Location by device id
 func GetDeviceLocation(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	location *hwmux.Location, httpRes *http.Response, err error) {
-	location, httpRes, err = client.DevicesAPI.DevicesLocationRetrieve(context.Background(), strconv.Itoa(int(id))).Execute()
+	location, httpRes, err = client.DevicesApi.DevicesLocationRetrieve(context.Background(), strconv.Itoa(int(id))).Execute()
 	handleError(httpRes, err, diagnostics, "Device Location")
 	return
 }
@@ -84,7 +84,7 @@ func GetDeviceLocation(client *hwmux.APIClient, diagnostics *diag.Diagnostics, i
 // Get permission groups for a given deviceGroup
 func GetPermissionGroupsForDeviceGroup(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	[]string, error) {
-	objectPerms, httpRes, err := client.GroupsAPI.GroupsPermissionsRetrieve(context.Background(), id).Execute()
+	objectPerms, httpRes, err := client.GroupsApi.GroupsPermissionsRetrieve(context.Background(), id).Execute()
 	handleError(httpRes, err, diagnostics, "Permissions for Device Group")
 	return objectPermsToUGList(objectPerms), nil
 }
@@ -92,7 +92,7 @@ func GetPermissionGroupsForDeviceGroup(client *hwmux.APIClient, diagnostics *dia
 // Get permission groups for a given device
 func GetPermissionGroupsForDevice(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	[]string, error) {
-	objectPerms, httpRes, err := client.DevicesAPI.DevicesPermissionsRetrieve(context.Background(), id).Execute()
+	objectPerms, httpRes, err := client.DevicesApi.DevicesPermissionsRetrieve(context.Background(), id).Execute()
 	handleError(httpRes, err, diagnostics, "Permissions for Device")
 	return objectPermsToUGList(objectPerms), nil
 }
@@ -100,7 +100,7 @@ func GetPermissionGroupsForDevice(client *hwmux.APIClient, diagnostics *diag.Dia
 // Get permission groups for a given Label
 func GetPermissionGroupsForLabel(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	[]string, error) {
-	objectPerms, httpRes, err := client.LabelsAPI.LabelsPermissionsRetrieve(context.Background(), id).Execute()
+	objectPerms, httpRes, err := client.LabelsApi.LabelsPermissionsRetrieve(context.Background(), id).Execute()
 	handleError(httpRes, err, diagnostics, "Permissions for Label")
 	return objectPermsToUGList(objectPerms), nil
 }
@@ -148,7 +148,7 @@ func processUserPermissions(user *hwmux.LoggedInUser, plan *UserResourceModel, d
 	// removed permissions when they exist but are not desired
 	for groupName := range existing {
 		if !desired[groupName] {
-			httpRes, err := client.PermissionsAPI.PermissionsGroupsUsersDestroy(context.Background(), groupName, user.GetUsername()).Execute()
+			httpRes, err := client.PermissionsApi.PermissionsGroupsUsersDestroy(context.Background(), groupName, user.GetUsername()).Execute()
 			if err != nil {
 				errorStr := err.Error()
 				if httpRes != nil {
@@ -165,7 +165,7 @@ func processUserPermissions(user *hwmux.LoggedInUser, plan *UserResourceModel, d
 	// add permissions when they are desired but do not exist
 	for groupName := range desired {
 		if !existing[groupName] {
-			_, httpRes, err := client.PermissionsAPI.PermissionsGroupsUsersCreate(context.Background(), groupName).User([]hwmux.User{*hwmux.NewUser(user.GetUsername())}).Execute()
+			_, httpRes, err := client.PermissionsApi.PermissionsGroupsUsersCreate(context.Background(), groupName).User([]hwmux.User{*hwmux.NewUser(user.GetUsername())}).Execute()
 			if err != nil {
 				errorStr := err.Error()
 				if httpRes != nil {

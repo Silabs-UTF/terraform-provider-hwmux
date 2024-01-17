@@ -148,7 +148,7 @@ func (r *DeviceGroupResource) Create(ctx context.Context, req resource.CreateReq
 	}
 
 	// create new deviceGroup
-	deviceGroupSerializer, httpRes, err := r.client.GroupsAPI.GroupsCreate(context.Background()).DeviceGroupSerializerWithDevicePk(*deviceGroupSerializer).Execute()
+	deviceGroupSerializer, httpRes, err := r.client.GroupsApi.GroupsCreate(context.Background()).DeviceGroupSerializerWithDevicePk(*deviceGroupSerializer).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -236,7 +236,7 @@ func (r *DeviceGroupResource) Update(ctx context.Context, req resource.UpdateReq
 
 	// update deviceGroup
 	id, _ := strconv.Atoi(data.ID.ValueString())
-	deviceGroupSerializer, httpRes, err := r.client.GroupsAPI.GroupsUpdate(context.Background(), int32(id)).DeviceGroupSerializerWithDevicePk(*deviceGroupSerializer).Execute()
+	deviceGroupSerializer, httpRes, err := r.client.GroupsApi.GroupsUpdate(context.Background(), int32(id)).DeviceGroupSerializerWithDevicePk(*deviceGroupSerializer).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -271,7 +271,7 @@ func (r *DeviceGroupResource) Delete(ctx context.Context, req resource.DeleteReq
 
 	// Delete existing
 	id, _ := strconv.Atoi(data.ID.ValueString())
-	httpRes, err := r.client.GroupsAPI.GroupsDestroy(context.Background(), int32(id)).Execute()
+	httpRes, err := r.client.GroupsApi.GroupsDestroy(context.Background(), int32(id)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting DeviceGroup",

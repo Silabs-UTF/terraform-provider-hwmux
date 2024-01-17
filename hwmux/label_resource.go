@@ -130,7 +130,7 @@ func (r *LabelResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 
 	// create new label
-	labelSerializer, httpRes, err := r.client.LabelsAPI.LabelsCreate(context.Background()).LabelSerializerWithPermissions(*labelSerializer).Execute()
+	labelSerializer, httpRes, err := r.client.LabelsApi.LabelsCreate(context.Background()).LabelSerializerWithPermissions(*labelSerializer).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -215,7 +215,7 @@ func (r *LabelResource) Update(ctx context.Context, req resource.UpdateRequest, 
 
 	// update label
 	id, _ := strconv.Atoi(data.ID.ValueString())
-	labelSerializer, httpRes, err := r.client.LabelsAPI.LabelsUpdate(context.Background(), int32(id)).LabelSerializerWithPermissions(*labelSerializer).Execute()
+	labelSerializer, httpRes, err := r.client.LabelsApi.LabelsUpdate(context.Background(), int32(id)).LabelSerializerWithPermissions(*labelSerializer).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -250,7 +250,7 @@ func (r *LabelResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 
 	// Delete existing
 	id, _ := strconv.Atoi(data.ID.ValueString())
-	httpRes, err := r.client.LabelsAPI.LabelsDestroy(context.Background(), int32(id)).Execute()
+	httpRes, err := r.client.LabelsApi.LabelsDestroy(context.Background(), int32(id)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Label",

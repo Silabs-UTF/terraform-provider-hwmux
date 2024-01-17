@@ -107,7 +107,7 @@ func (r *TokenResource) Create(ctx context.Context, req resource.CreateRequest, 
 	}
 
 	// create new token
-	tokenSerializer, httpRes, err := r.client.UserAPI.UserTokenCreate(context.Background(), data.UserId.ValueString()).Execute()
+	tokenSerializer, httpRes, err := r.client.UserApi.UserTokenCreate(context.Background(), data.UserId.ValueString()).Execute()
 	data.ID = types.StringValue(tokenSerializer.GetKey())
 
 	if err != nil {
@@ -171,7 +171,7 @@ func (r *TokenResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	// update token
-	tokenSerializer, httpRes, err := r.client.UserAPI.UserTokenCreate(context.Background(), data.UserId.ValueString()).Execute()
+	tokenSerializer, httpRes, err := r.client.UserApi.UserTokenCreate(context.Background(), data.UserId.ValueString()).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
@@ -205,7 +205,7 @@ func (r *TokenResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	}
 
 	// Delete existing (we delete by creating a new one that invalidates the previous one)
-	_, httpRes, err := r.client.UserAPI.UserTokenCreate(context.Background(), data.UserId.ValueString()).Execute()
+	_, httpRes, err := r.client.UserApi.UserTokenCreate(context.Background(), data.UserId.ValueString()).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error Deleting Token",
