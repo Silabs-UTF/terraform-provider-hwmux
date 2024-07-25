@@ -27,6 +27,7 @@ DeviceGroup data source
 - `enable_ahs_cas` (Boolean) Enable the Automated Health Service to take Corrective Actions.
 - `metadata` (String) The metadata of the Device Group.
 - `name` (String) Device Group name. Must be unique.
+- `source` (String) The source where the device group was created.
 
 <a id="nestedatt--devices"></a>
 ### Nested Schema for `devices`

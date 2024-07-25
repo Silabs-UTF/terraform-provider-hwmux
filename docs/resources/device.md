@@ -48,6 +48,7 @@ resource "hwmux_device" "example" {
 
 - `id` (String) Device identifier.
 - `last_updated` (String) Timestamp of the last Terraform update of the resource.
+- `source` (String) The source where the device was created.
 
 ## Import
 

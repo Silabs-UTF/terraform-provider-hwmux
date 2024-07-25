@@ -24,6 +24,7 @@ Label data source
 - `device_groups` (Attributes List) The Device Groups that belong to the Label (see [below for nested schema](#nestedatt--device_groups))
 - `metadata` (String) The metadata of the Label.
 - `name` (String) Label name. Must be unique.
+- `source` (String) The source where the label was created.
 
 <a id="nestedatt--device_groups"></a>
 ### Nested Schema for `device_groups`

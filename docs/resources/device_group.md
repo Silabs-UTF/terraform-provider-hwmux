@@ -44,6 +44,7 @@ resource "hwmux_device_group" "new_testbed" {
 
 - `id` (String) Device Group identifier.
 - `last_updated` (String) Timestamp of the last Terraform update of the resource.
+- `source` (String) The source where the device group was created.
 
 ## Import
 
