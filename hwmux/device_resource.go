@@ -45,6 +45,7 @@ type DeviceResourceModel struct {
 	LocationMetadata types.String   `tfsdk:"location_metadata"`
 	PermissionGroups []types.String `tfsdk:"permission_groups"`
 	LastUpdated      types.String   `tfsdk:"last_updated"`
+	Source           types.String   `tfsdk:"source"`
 }
 
 func (r *DeviceResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -122,6 +123,10 @@ func (r *DeviceResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				Description: "Timestamp of the last Terraform update of the resource.",
 				Computed:    true,
 			},
+            "source": schema.StringAttribute{
+                Description: "The source where the device was created.",
+                Computed:    true,
+            },
 		},
 	}
 }
@@ -164,6 +169,8 @@ func (r *DeviceResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
+// 	writeOnlyDevice.Source = source.SourceEnum("TERRAFORM")
+
 	// create new device
 	writeOnlyDevice, httpRes, err := r.client.DevicesApi.DevicesCreate(context.Background()).WriteOnlyDevice(*writeOnlyDevice).Execute()
 
@@ -201,6 +208,14 @@ func (r *DeviceResource) Create(ctx context.Context, req resource.CreateRequest,
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
 
+// func (deviceCreatePayload *DeviceResourceModel) SetSource(source string) {
+//     if source != "" {
+//         deviceCreatePayload.Source.Set(&source)
+//     } else {
+//         deviceCreatePayload.Source.Set("TERRAFORM")
+//     }
+// }
+
 func (r *DeviceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data *DeviceResourceModel
 
@@ -224,6 +239,12 @@ func (r *DeviceResource) Read(ctx context.Context, req resource.ReadRequest, res
 		data.Sn_or_name = types.StringValue(device.GetSnOrName())
 	} else {
 		data.Sn_or_name = types.StringNull()
+	}
+	data.Source = types.StringValue(string(device.GetSource()))
+    if device.GetSource() != "" {
+		data.Source = types.StringValue(string(device.GetSource()))
+	} else {
+		data.Source = types.StringNull()
 	}
 	data.Is_wstk = types.BoolValue(device.GetIsWstk())
 	if device.GetWstkPart() != "" {
@@ -378,7 +399,9 @@ func (r *DeviceResource) setDeviceStatusFromPlan(diagnostics *diag.Diagnostics, 
 // Create a writeOnlyDevice based on a terraform plan
 func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnostics) (*hwmux.WriteOnlyDevice, error) {
 	writeOnlyDevice := hwmux.NewWriteOnlyDeviceWithDefaults()
+	fmt.Println("Before creating Source:", writeOnlyDevice.GetSource())
 	writeOnlyDevice.SetPart(plan.Part.ValueString())
+	writeOnlyDevice.SetSource(hwmux.TERRAFORM)
 
 	if !plan.Wstk_part.IsUnknown() {
 		writeOnlyDevice.SetWstkPart(plan.Wstk_part.ValueString())
@@ -421,6 +444,7 @@ func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnosti
 
 	writeOnlyDevice.SetPermissionGroups(permissionList)
 
+    fmt.Println("After creating Source:", writeOnlyDevice.GetSource())
 	return writeOnlyDevice, nil
 }
 
@@ -433,6 +457,12 @@ func updateDeviceModelFromResponse(device *hwmux.WriteOnlyDevice, plan *DeviceRe
 		plan.Sn_or_name = types.StringValue(device.GetSnOrName())
 	} else {
 		plan.Sn_or_name = types.StringNull()
+	}
+	plan.Source = types.StringValue(string(device.GetSource()))
+    if device.GetSource() != "" {
+		plan.Source = types.StringValue(string(device.GetSource()))
+	} else {
+		plan.Source = types.StringNull()
 	}
 	plan.Is_wstk = types.BoolValue(device.GetIsWstk())
 	if device.GetUri() != "" {

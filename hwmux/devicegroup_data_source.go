@@ -30,6 +30,7 @@ type DeviceGroupDataSourceModel struct {
 	Enable_ahs_cas     types.Bool          `tfsdk:"enable_ahs_cas"`
 	Enable_ahs_actions types.Bool          `tfsdk:"enable_ahs_actions"`
 	Metadata           types.String        `tfsdk:"metadata"`
+	Source             types.String        `tfsdk:"source"`
 }
 
 type nestedDeviceModel struct {
@@ -82,6 +83,10 @@ func (d *DeviceGroupDataSource) Schema(ctx context.Context, req datasource.Schem
 				MarkdownDescription: "Enable the Automated Health Service to take Corrective Actions.",
 				Computed:            true,
 			},
+            "source": schema.StringAttribute{
+                MarkdownDescription: "The source where the device group was created.",
+                Computed:            true,
+            },
 		},
 	}
 }
@@ -127,6 +132,7 @@ func (d *DeviceGroupDataSource) Read(ctx context.Context, req datasource.ReadReq
 	data.Enable_ahs = types.BoolValue(deviceGroup.GetEnableAhs())
 	data.Enable_ahs_actions = types.BoolValue(deviceGroup.GetEnableAhsActions())
 	data.Enable_ahs_cas = types.BoolValue(deviceGroup.GetEnableAhsCas())
+	data.Source = types.StringValue(string(deviceGroup.GetSource()))
 
 	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), &resp.Diagnostics, "deviceGroup", &data.Metadata)
 	if err != nil {

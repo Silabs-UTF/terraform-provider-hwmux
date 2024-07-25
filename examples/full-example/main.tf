@@ -42,6 +42,7 @@ resource "hwmux_device" "new_device" {
   room              = "Room_0"
   metadata          = jsonencode(yamldecode(file("example.yaml")))
   permission_groups = ["All users"]
+  source            = "TERRAFORM"
 }
 
 resource "hwmux_device_group" "new_testbed" {
@@ -49,6 +50,7 @@ resource "hwmux_device_group" "new_testbed" {
   metadata          = jsonencode(yamldecode(file("example.yaml")))
   devices           = [hwmux_device.new_device.id, data.hwmux_device.device_ds.id]
   permission_groups = ["All users"]
+  source            = "TERRAFORM"
 }
 
 resource "hwmux_label" "new_label" {
@@ -56,6 +58,7 @@ resource "hwmux_label" "new_label" {
   metadata          = jsonencode(yamldecode(file("example.yaml")))
   device_groups     = [hwmux_device_group.new_testbed.id, data.hwmux_device_group.device_group_ds.id]
   permission_groups = ["All users"]
+  source            = "TERRAFORM"
 }
 
 resource "hwmux_permission_group" "new_permission_group" {

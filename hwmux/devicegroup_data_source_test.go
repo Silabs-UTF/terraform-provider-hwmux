@@ -25,6 +25,7 @@ func TestAccDeviceGroupDataSource(t *testing.T) {
 					resource.TestCheckResourceAttrSet(deviceGroupDataSourceTfName, "enable_ahs_cas"),
 					resource.TestCheckResourceAttrSet(deviceGroupDataSourceTfName, "metadata"),
 					resource.TestCheckResourceAttrSet(deviceGroupDataSourceTfName, "devices.0.id"),
+					resource.TestCheckResourceAttrSet(deviceGroupDataSourceTfName, "source"),
 				),
 			},
 		},
