@@ -169,8 +169,6 @@ func (r *DeviceResource) Create(ctx context.Context, req resource.CreateRequest,
 		return
 	}
 
-// 	writeOnlyDevice.Source = source.SourceEnum("TERRAFORM")
-
 	// create new device
 	writeOnlyDevice, httpRes, err := r.client.DevicesApi.DevicesCreate(context.Background()).WriteOnlyDevice(*writeOnlyDevice).Execute()
 
@@ -207,14 +205,6 @@ func (r *DeviceResource) Create(ctx context.Context, req resource.CreateRequest,
 	// Save data into Terraform state
 	resp.Diagnostics.Append(resp.State.Set(ctx, &data)...)
 }
-
-// func (deviceCreatePayload *DeviceResourceModel) SetSource(source string) {
-//     if source != "" {
-//         deviceCreatePayload.Source.Set(&source)
-//     } else {
-//         deviceCreatePayload.Source.Set("TERRAFORM")
-//     }
-// }
 
 func (r *DeviceResource) Read(ctx context.Context, req resource.ReadRequest, resp *resource.ReadResponse) {
 	var data *DeviceResourceModel
@@ -302,6 +292,10 @@ func (r *DeviceResource) Update(ctx context.Context, req resource.UpdateRequest,
 			"Failed to create device API request based on plan", err.Error(),
 		)
 		return
+	}
+
+	if data.Source.ValueString() != "TERRAFORM" {
+	    writeOnlyDevice.SetSource(hwmux.TERRAFORM)
 	}
 
 	// update device
@@ -399,7 +393,7 @@ func (r *DeviceResource) setDeviceStatusFromPlan(diagnostics *diag.Diagnostics, 
 // Create a writeOnlyDevice based on a terraform plan
 func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnostics) (*hwmux.WriteOnlyDevice, error) {
 	writeOnlyDevice := hwmux.NewWriteOnlyDeviceWithDefaults()
-	fmt.Println("Before creating Source:", writeOnlyDevice.GetSource())
+
 	writeOnlyDevice.SetPart(plan.Part.ValueString())
 	writeOnlyDevice.SetSource(hwmux.TERRAFORM)
 
@@ -444,7 +438,7 @@ func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnosti
 
 	writeOnlyDevice.SetPermissionGroups(permissionList)
 
-    fmt.Println("After creating Source:", writeOnlyDevice.GetSource())
+
 	return writeOnlyDevice, nil
 }
 

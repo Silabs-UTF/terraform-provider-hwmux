@@ -240,6 +240,11 @@ func (r *DeviceGroupResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
+	if data.Source.ValueString() != "TERRAFORM" {
+	    fmt.Println("Update code triggered")
+	    deviceGroupSerializer.SetSource(hwmux.TERRAFORM)
+	}
+
 	// update deviceGroup
 	id, _ := strconv.Atoi(data.ID.ValueString())
 	deviceGroupSerializer, httpRes, err := r.client.GroupsApi.GroupsUpdate(context.Background(), int32(id)).DeviceGroupSerializerWithDevicePk(*deviceGroupSerializer).Execute()
@@ -339,11 +344,7 @@ func updateDGModelFromResponse(deviceGroup *hwmux.DeviceGroupSerializerWithDevic
 	plan.Enable_ahs_actions = types.BoolValue(deviceGroup.GetEnableAhsActions())
 	plan.Enable_ahs_cas = types.BoolValue(deviceGroup.GetEnableAhsCas())
 	plan.Source = types.StringValue(string(deviceGroup.GetSource()))
-    if deviceGroup.GetSource() != "" {
-		plan.Source = types.StringValue(string(deviceGroup.GetSource()))
-	} else {
-		plan.Source = types.StringNull()
-	}
+
 	err = MarshalMetadataSetError(deviceGroup.GetMetadata(), diagnostics, "deviceGroup", &plan.Metadata)
 	if err != nil {
 		return

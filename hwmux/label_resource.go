@@ -219,6 +219,11 @@ func (r *LabelResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
+    if data.Source.ValueString() != "TERRAFORM" {
+	    fmt.Println("Label block triggered")
+	    labelSerializer.SetSource(hwmux.TERRAFORM)
+	}
+
 	// update label
 	id, _ := strconv.Atoi(data.ID.ValueString())
 	labelSerializer, httpRes, err := r.client.LabelsApi.LabelsUpdate(context.Background(), int32(id)).LabelSerializerWithPermissions(*labelSerializer).Execute()
@@ -307,11 +312,7 @@ func updateLabelModelFromResponse(label *hwmux.LabelSerializerWithPermissions, p
 	plan.ID = types.StringValue(strconv.Itoa(int(label.GetId())))
 	plan.Name = types.StringValue(label.GetName())
     plan.Source = types.StringValue(string(label.GetSource()))
-    if label.GetSource() != "" {
-		plan.Source = types.StringValue(string(label.GetSource()))
-	} else {
-		plan.Source = types.StringNull()
-	}
+
 	err = MarshalMetadataSetError(label.GetMetadata(), diagnostics, "label", &plan.Metadata)
 	if err != nil {
 		return
