@@ -241,7 +241,6 @@ func (r *DeviceGroupResource) Update(ctx context.Context, req resource.UpdateReq
 	}
 
 	if data.Source.ValueString() != "TERRAFORM" {
-	    fmt.Println("Update code triggered")
 	    deviceGroupSerializer.SetSource(hwmux.TERRAFORM)
 	}
 

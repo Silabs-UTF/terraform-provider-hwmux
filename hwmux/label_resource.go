@@ -220,7 +220,6 @@ func (r *LabelResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
     if data.Source.ValueString() != "TERRAFORM" {
-	    fmt.Println("Label block triggered")
 	    labelSerializer.SetSource(hwmux.TERRAFORM)
 	}
 
