@@ -1,0 +1,18 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  namespace: infra-sw
+  name: hwmux-terraform-provider
+  title: Hwmux Terraform Provider
+  description: Hwmux terraform provider for resource definitions
+  links:
+    - terraform-docs:
+      title: Documentation in the terraform registry
+      url: https://registry.terraform.io/providers/Silabs-UTF/hwmux/latest
+spec:
+  type: library
+  lifecycle: production
+  owner: group:infrasw-fs
+  system: hwmux
+  dependsOn:
+    - component:infra-sw/hwmux-clinet-golang
