@@ -27,6 +27,7 @@ type LabelDataSourceModel struct {
 	Name         types.String             `tfsdk:"name"`
 	DeviceGroups []nestedDeviceGroupModel `tfsdk:"device_groups"`
 	Metadata     types.String             `tfsdk:"metadata"`
+	Source       types.String             `tfsdk:"source"`
 }
 
 type nestedDeviceGroupModel struct {
@@ -56,6 +57,10 @@ func (d *LabelDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 				MarkdownDescription: "The metadata of the Label.",
 				Computed:            true,
 			},
+            "source": schema.StringAttribute{
+                MarkdownDescription: "The source where the label was created.",
+                Computed:            true,
+            },
 			"device_groups": schema.ListNestedAttribute{
 				MarkdownDescription: "The Device Groups that belong to the Label",
 				Computed:            true,
@@ -114,6 +119,7 @@ func (d *LabelDataSource) Read(ctx context.Context, req datasource.ReadRequest, 
 	// Map response body to model
 	data.ID = types.Int64Value(int64(label.GetId()))
 	data.Name = types.StringValue(label.GetName())
+	data.Source = types.StringValue(string(label.GetSource()))
 
 	err = MarshalMetadataSetError(label.GetMetadata(), &resp.Diagnostics, "label", &data.Metadata)
 	if err != nil {

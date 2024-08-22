@@ -40,6 +40,7 @@ type LabelResourceModel struct {
 	DeviceGroups     []types.Int64  `tfsdk:"device_groups"`
 	PermissionGroups []types.String `tfsdk:"permission_groups"`
 	LastUpdated      types.String   `tfsdk:"last_updated"`
+	Source           types.String   `tfsdk:"source"`
 }
 
 func (r *LabelResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -87,6 +88,10 @@ func (r *LabelResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Description: "Timestamp of the last Terraform update of the resource.",
 				Computed:    true,
 			},
+			"source": schema.StringAttribute{
+                Description: "The source where the label was created.",
+                Computed:    true,
+            },
 		},
 	}
 }
@@ -174,6 +179,7 @@ func (r *LabelResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	// Map response body to model
 	data.ID = types.StringValue(strconv.Itoa(int(label.GetId())))
 	data.Name = types.StringValue(label.GetName())
+    data.Source = types.StringValue(string(label.GetSource()))
 
 	err = MarshalMetadataSetError(label.GetMetadata(), &resp.Diagnostics, "label", &data.Metadata)
 	if err != nil {
@@ -211,6 +217,10 @@ func (r *LabelResource) Update(ctx context.Context, req resource.UpdateRequest, 
 			"Failed to create label API request based on plan", err.Error(),
 		)
 		return
+	}
+
+    if data.Source.ValueString() != "TERRAFORM" {
+	    labelSerializer.SetSource(hwmux.TERRAFORM)
 	}
 
 	// update label
@@ -268,6 +278,7 @@ func (r *LabelResource) ImportState(ctx context.Context, req resource.ImportStat
 func createLabelFromPlan(plan *LabelResourceModel, diagnostics *diag.Diagnostics) (*hwmux.LabelSerializerWithPermissions, error) {
 	labelSerializer := hwmux.NewLabelSerializerWithPermissionsWithDefaults()
 	labelSerializer.SetName(plan.Name.ValueString())
+    labelSerializer.SetSource(hwmux.TERRAFORM)
 
 	if !plan.Metadata.IsUnknown() {
 		metadata, errorMet := UnmarshalMetadataSetError(plan.Metadata.ValueString(), diagnostics, "label")
@@ -299,6 +310,7 @@ func updateLabelModelFromResponse(label *hwmux.LabelSerializerWithPermissions, p
 	// Map response body to schema and populate Computed attribute values
 	plan.ID = types.StringValue(strconv.Itoa(int(label.GetId())))
 	plan.Name = types.StringValue(label.GetName())
+    plan.Source = types.StringValue(string(label.GetSource()))
 
 	err = MarshalMetadataSetError(label.GetMetadata(), diagnostics, "label", &plan.Metadata)
 	if err != nil {

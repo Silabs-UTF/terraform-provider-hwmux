@@ -33,6 +33,7 @@ resource "hwmux_device" "test" {
 					resource.TestCheckResourceAttr("hwmux_device.test", "online", "true"),
 					resource.TestCheckResourceAttr("hwmux_device.test", "metadata", "{}"),
 					resource.TestCheckResourceAttr("hwmux_device.test", "location_metadata", "{}"),
+					resource.TestCheckResourceAttr("hwmux_device.test", "source", "TERRAFORM"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("hwmux_device.test", "id"),
 					resource.TestCheckResourceAttrSet("hwmux_device.test", "last_updated"),
@@ -72,6 +73,7 @@ resource "hwmux_device" "test" {
 					resource.TestCheckResourceAttr("hwmux_device.test", "is_wstk", "false"),
 					resource.TestCheckResourceAttr("hwmux_device.test", "metadata", "{}"),
 					resource.TestCheckResourceAttr("hwmux_device.test", "location_metadata", "{}"),
+					resource.TestCheckResourceAttr("hwmux_device.test", "source", "TERRAFORM"),
 				),
 			},
 			// (Delete testing automatically occurs in TestCase)
@@ -107,6 +109,7 @@ resource "hwmux_device" "test" {
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("hwmux_device.test", "id"),
 					resource.TestCheckResourceAttrSet("hwmux_device.test", "last_updated"),
+					resource.TestCheckResourceAttr("hwmux_device.test", "source", "TERRAFORM"),
 				),
 			},
 			// ImportState testing
@@ -151,6 +154,7 @@ resource "hwmux_device" "test" {
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("hwmux_device.test", "id"),
 					resource.TestCheckResourceAttrSet("hwmux_device.test", "last_updated"),
+					resource.TestCheckResourceAttr("hwmux_device.test", "source", "TERRAFORM"),
 				),
 			},
 			// ImportState testing

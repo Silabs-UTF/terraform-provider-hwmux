@@ -31,6 +31,7 @@ type DeviceDataSourceModel struct {
 	Metadata   types.String `tfsdk:"metadata"`
 	Part       types.String `tfsdk:"part"`
 	Wstk_part  types.String `tfsdk:"wstk_part"`
+	Source     types.String `tfsdk:"source"`
 }
 
 func (d *DeviceDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -75,6 +76,10 @@ func (d *DeviceDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 				MarkdownDescription: "The metadata of the device.",
 				Computed:            true,
 			},
+            "source": schema.StringAttribute{
+                Description: "The source where the device was created.",
+                Computed:    true,
+            },
 		},
 	}
 }
@@ -119,6 +124,7 @@ func (d *DeviceDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	data.Is_wstk = types.BoolValue(device.GetIsWstk())
 	data.Uri = types.StringValue(device.GetUri())
 	data.Online = types.BoolValue(device.GetOnline())
+	data.Source = types.StringValue(string(device.GetSource()))
 
 	err = MarshalMetadataSetError(device.GetMetadata(), &resp.Diagnostics, "device", &data.Metadata)
 	if err != nil {

@@ -29,6 +29,7 @@ resource "hwmux_device_group" "test" {
 					resource.TestCheckResourceAttr(deviceGroupResourceTfName, "permission_groups.0", "All users"),
 					// Verify the device_group item has Computed attributes filled.
 					resource.TestCheckResourceAttr(deviceGroupResourceTfName, "metadata", "{}"),
+					resource.TestCheckResourceAttr(deviceGroupResourceTfName, "source", "TERRAFORM"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet(deviceGroupResourceTfName, "id"),
 					resource.TestCheckResourceAttrSet(deviceGroupResourceTfName, "enable_ahs"),
@@ -68,6 +69,7 @@ resource "hwmux_device_group" "test" {
 					resource.TestCheckResourceAttr(deviceGroupResourceTfName, "enable_ahs_cas", "true"),
 					// Verify the device_group item has Computed attributes filled.
 					resource.TestCheckResourceAttr(deviceGroupResourceTfName, "metadata", "{}"),
+					resource.TestCheckResourceAttr(deviceGroupResourceTfName, "source", "TERRAFORM"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

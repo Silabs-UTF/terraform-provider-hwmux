@@ -21,6 +21,7 @@ func TestAccLabelDataSource(t *testing.T) {
 					resource.TestCheckResourceAttrSet("data.hwmux_label.test", "device_groups.0.id"),
 					resource.TestCheckResourceAttrSet("data.hwmux_label.test", "device_groups.0.name"),
 					resource.TestCheckResourceAttrSet("data.hwmux_label.test", "metadata"),
+					resource.TestCheckResourceAttrSet("data.hwmux_label.test", "source"),
 				),
 			},
 		},

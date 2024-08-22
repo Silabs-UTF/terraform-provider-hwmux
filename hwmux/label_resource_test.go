@@ -30,6 +30,7 @@ resource "hwmux_label" "test" {
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("hwmux_label.test", "id"),
 					resource.TestCheckResourceAttrSet("hwmux_label.test", "last_updated"),
+					resource.TestCheckResourceAttr("hwmux_label.test", "source", "TERRAFORM"),
 				),
 			},
 			// ImportState testing
@@ -57,6 +58,7 @@ resource "hwmux_label" "test" {
 					resource.TestCheckResourceAttr("hwmux_label.test", "permission_groups.#", "1"),
 					resource.TestCheckResourceAttr("hwmux_label.test", "permission_groups.0", "Staff users"),
 					resource.TestCheckResourceAttr("hwmux_label.test", "metadata", "{}"),
+					resource.TestCheckResourceAttr("hwmux_label.test", "source", "TERRAFORM"),
 				),
 			},
 			// Delete testing automatically occurs in TestCase

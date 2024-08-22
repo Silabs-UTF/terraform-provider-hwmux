@@ -38,6 +38,7 @@ resource "hwmux_label" "new_label" {
 
 - `id` (String) Label identifier.
 - `last_updated` (String) Timestamp of the last Terraform update of the resource.
+- `source` (String) The source where the label was created.
 
 ## Import
 
