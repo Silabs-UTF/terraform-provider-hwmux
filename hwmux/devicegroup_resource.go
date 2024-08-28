@@ -157,8 +157,8 @@ func (r *DeviceGroupResource) Create(ctx context.Context, req resource.CreateReq
 
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating deviceGroup",
-			"Could not create deviceGroup, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
+			fmt.Sprintf("Error creating deviceGroup %s", data.Name.String()),
+			fmt.Sprintf("Could not create deviceGroup %s, unexpected error: %s\n%s", data.Name.String(), err.Error(), BodyToString(&httpRes.Body)),
 		)
 		return
 	}
@@ -191,6 +191,11 @@ func (r *DeviceGroupResource) Read(ctx context.Context, req resource.ReadRequest
 	id, _ := strconv.Atoi(data.ID.ValueString())
 	deviceGroup, _, err := GetDeviceGroup(r.client, &resp.Diagnostics, int32(id))
 	if err != nil {
+		// add diagnostic error with the expected ID
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Error reading deviceGroup %d", id),
+			fmt.Sprintf("Could not read deviceGroup %d, unexpected error: %s", id, err.Error()),
+		)
 		return
 	}
 
@@ -240,18 +245,14 @@ func (r *DeviceGroupResource) Update(ctx context.Context, req resource.UpdateReq
 		return
 	}
 
-	if data.Source.ValueString() != "TERRAFORM" {
-	    deviceGroupSerializer.SetSource(hwmux.TERRAFORM)
-	}
-
 	// update deviceGroup
 	id, _ := strconv.Atoi(data.ID.ValueString())
 	deviceGroupSerializer, httpRes, err := r.client.GroupsApi.GroupsUpdate(context.Background(), int32(id)).DeviceGroupSerializerWithDevicePk(*deviceGroupSerializer).Execute()
 
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error updating deviceGroup "+data.ID.String(),
-			"Could not update deviceGroup, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
+			fmt.Sprintf("Error updating deviceGroup %d", id),
+			fmt.Sprintf("Could not update deviceGroup %d, unexpected error: %s\n%s", id, err.Error(), BodyToString(&httpRes.Body)),
 		)
 		return
 	}
@@ -284,8 +285,8 @@ func (r *DeviceGroupResource) Delete(ctx context.Context, req resource.DeleteReq
 	httpRes, err := r.client.GroupsApi.GroupsDestroy(context.Background(), int32(id)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Deleting DeviceGroup",
-			"Could not delete deviceGroup, unexpected error: "+BodyToString(&httpRes.Body),
+			fmt.Sprintf("Error deleting deviceGroup %s", data.ID.String()),
+			fmt.Sprintf("Could not delete deviceGroup %s, unexpected error: %s\n%s", data.ID.String(), err.Error(), BodyToString(&httpRes.Body)),
 		)
 		return
 	}

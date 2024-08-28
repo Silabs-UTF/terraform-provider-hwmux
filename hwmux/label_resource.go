@@ -139,8 +139,8 @@ func (r *LabelResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating label",
-			"Could not create label, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
+			fmt.Sprintf("Error creating label %s", data.Name.String()),
+			fmt.Sprintf("Could not create label %s, unexpected error: %s\n%s", data.Name.String(), err.Error(), BodyToString(&httpRes.Body)),
 		)
 		return
 	}
@@ -173,6 +173,11 @@ func (r *LabelResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	id, _ := strconv.Atoi(data.ID.ValueString())
 	label, _, err := GetLabel(r.client, &resp.Diagnostics, int32(id))
 	if err != nil {
+		// add diagnostic message with the expected ID
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Error reading label %d", id),
+			fmt.Sprintf("Could not read label %d, unexpected error: %s", id, err.Error()),
+		)
 		return
 	}
 
@@ -230,7 +235,7 @@ func (r *LabelResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating label "+data.ID.String(),
-			"Could not update label, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
+			fmt.Sprintf("Could not update label %d, unexpected error: %s\n%s", id, err.Error(), BodyToString(&httpRes.Body)),
 		)
 		return
 	}
@@ -263,8 +268,8 @@ func (r *LabelResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	httpRes, err := r.client.LabelsApi.LabelsDestroy(context.Background(), int32(id)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Deleting Label",
-			"Could not delete label, unexpected error: "+BodyToString(&httpRes.Body),
+			fmt.Sprintf("Error deleting label %d", id),
+			fmt.Sprintf("Could not delete label %d, unexpected error: %s\n%s", id, err.Error(), BodyToString(&httpRes.Body)),
 		)
 		return
 	}
