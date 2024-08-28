@@ -76,10 +76,10 @@ func (d *DeviceDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 				MarkdownDescription: "The metadata of the device.",
 				Computed:            true,
 			},
-            "source": schema.StringAttribute{
-                Description: "The source where the device was created.",
-                Computed:    true,
-            },
+			"source": schema.StringAttribute{
+				Description: "The source where the device was created.",
+				Computed:    true,
+			},
 		},
 	}
 }

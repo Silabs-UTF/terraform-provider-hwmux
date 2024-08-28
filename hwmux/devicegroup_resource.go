@@ -106,10 +106,10 @@ func (r *DeviceGroupResource) Schema(ctx context.Context, req resource.SchemaReq
 				Description: "Timestamp of the last Terraform update of the resource.",
 				Computed:    true,
 			},
-            "source": schema.StringAttribute{
-                Description: "The source where the device group was created.",
-                Computed:    true,
-            },
+			"source": schema.StringAttribute{
+				Description: "The source where the device group was created.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -299,7 +299,7 @@ func (r *DeviceGroupResource) ImportState(ctx context.Context, req resource.Impo
 func createDeviceGroupFromPlan(plan *DeviceGroupResourceModel, diagnostics *diag.Diagnostics) (*hwmux.DeviceGroupSerializerWithDevicePk, error) {
 	deviceGroupSerializer := hwmux.NewDeviceGroupSerializerWithDevicePkWithDefaults()
 	deviceGroupSerializer.SetName(plan.Name.ValueString())
-    deviceGroupSerializer.SetSource(hwmux.TERRAFORM)
+	deviceGroupSerializer.SetSource(hwmux.TERRAFORM)
 	if !plan.Enable_ahs.IsUnknown() {
 		deviceGroupSerializer.SetEnableAhs(plan.Enable_ahs.ValueBool())
 	}

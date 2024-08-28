@@ -123,10 +123,10 @@ func (r *DeviceResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				Description: "Timestamp of the last Terraform update of the resource.",
 				Computed:    true,
 			},
-            "source": schema.StringAttribute{
-                Description: "The source where the device was created.",
-                Computed:    true,
-            },
+			"source": schema.StringAttribute{
+				Description: "The source where the device was created.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -236,7 +236,7 @@ func (r *DeviceResource) Read(ctx context.Context, req resource.ReadRequest, res
 		data.Sn_or_name = types.StringNull()
 	}
 	data.Source = types.StringValue(string(device.GetSource()))
-    if device.GetSource() != "" {
+	if device.GetSource() != "" {
 		data.Source = types.StringValue(string(device.GetSource()))
 	} else {
 		data.Source = types.StringNull()
@@ -300,7 +300,7 @@ func (r *DeviceResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	if data.Source.ValueString() != "TERRAFORM" {
-	    writeOnlyDevice.SetSource(hwmux.TERRAFORM)
+		writeOnlyDevice.SetSource(hwmux.TERRAFORM)
 	}
 
 	// update device
@@ -446,7 +446,6 @@ func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnosti
 
 	writeOnlyDevice.SetPermissionGroups(permissionList)
 
-
 	return writeOnlyDevice, nil
 }
 
@@ -461,7 +460,7 @@ func updateDeviceModelFromResponse(device *hwmux.WriteOnlyDevice, plan *DeviceRe
 		plan.Sn_or_name = types.StringNull()
 	}
 	plan.Source = types.StringValue(string(device.GetSource()))
-    if device.GetSource() != "" {
+	if device.GetSource() != "" {
 		plan.Source = types.StringValue(string(device.GetSource()))
 	} else {
 		plan.Source = types.StringNull()

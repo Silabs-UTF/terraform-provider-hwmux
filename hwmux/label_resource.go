@@ -89,9 +89,9 @@ func (r *LabelResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Computed:    true,
 			},
 			"source": schema.StringAttribute{
-                Description: "The source where the label was created.",
-                Computed:    true,
-            },
+				Description: "The source where the label was created.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -184,7 +184,7 @@ func (r *LabelResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	// Map response body to model
 	data.ID = types.StringValue(strconv.Itoa(int(label.GetId())))
 	data.Name = types.StringValue(label.GetName())
-    data.Source = types.StringValue(string(label.GetSource()))
+	data.Source = types.StringValue(string(label.GetSource()))
 
 	err = MarshalMetadataSetError(label.GetMetadata(), &resp.Diagnostics, "label", &data.Metadata)
 	if err != nil {
@@ -224,8 +224,8 @@ func (r *LabelResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
-    if data.Source.ValueString() != "TERRAFORM" {
-	    labelSerializer.SetSource(hwmux.TERRAFORM)
+	if data.Source.ValueString() != "TERRAFORM" {
+		labelSerializer.SetSource(hwmux.TERRAFORM)
 	}
 
 	// update label
@@ -283,7 +283,7 @@ func (r *LabelResource) ImportState(ctx context.Context, req resource.ImportStat
 func createLabelFromPlan(plan *LabelResourceModel, diagnostics *diag.Diagnostics) (*hwmux.LabelSerializerWithPermissions, error) {
 	labelSerializer := hwmux.NewLabelSerializerWithPermissionsWithDefaults()
 	labelSerializer.SetName(plan.Name.ValueString())
-    labelSerializer.SetSource(hwmux.TERRAFORM)
+	labelSerializer.SetSource(hwmux.TERRAFORM)
 
 	if !plan.Metadata.IsUnknown() {
 		metadata, errorMet := UnmarshalMetadataSetError(plan.Metadata.ValueString(), diagnostics, "label")
@@ -315,7 +315,7 @@ func updateLabelModelFromResponse(label *hwmux.LabelSerializerWithPermissions, p
 	// Map response body to schema and populate Computed attribute values
 	plan.ID = types.StringValue(strconv.Itoa(int(label.GetId())))
 	plan.Name = types.StringValue(label.GetName())
-    plan.Source = types.StringValue(string(label.GetSource()))
+	plan.Source = types.StringValue(string(label.GetSource()))
 
 	err = MarshalMetadataSetError(label.GetMetadata(), diagnostics, "label", &plan.Metadata)
 	if err != nil {

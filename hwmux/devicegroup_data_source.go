@@ -83,10 +83,10 @@ func (d *DeviceGroupDataSource) Schema(ctx context.Context, req datasource.Schem
 				MarkdownDescription: "Enable the Automated Health Service to take Corrective Actions.",
 				Computed:            true,
 			},
-            "source": schema.StringAttribute{
-                MarkdownDescription: "The source where the device group was created.",
-                Computed:            true,
-            },
+			"source": schema.StringAttribute{
+				MarkdownDescription: "The source where the device group was created.",
+				Computed:            true,
+			},
 		},
 	}
 }
