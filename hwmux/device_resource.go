@@ -123,10 +123,10 @@ func (r *DeviceResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				Description: "Timestamp of the last Terraform update of the resource.",
 				Computed:    true,
 			},
-            "source": schema.StringAttribute{
-                Description: "The source where the device was created.",
-                Computed:    true,
-            },
+			"source": schema.StringAttribute{
+				Description: "The source where the device was created.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -174,8 +174,8 @@ func (r *DeviceResource) Create(ctx context.Context, req resource.CreateRequest,
 
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating device",
-			"Could not create device, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
+			fmt.Sprintf("Error creating device %s", data.Sn_or_name.String()),
+			fmt.Sprintf("Could not create device %s, unexpected error. Error %s \n Response body %s", data.Sn_or_name.String(), err.Error(), BodyToString(&httpRes.Body)),
 		)
 		return
 	}
@@ -197,7 +197,7 @@ func (r *DeviceResource) Create(ctx context.Context, req resource.CreateRequest,
 	err = updateDeviceModelFromResponse(writeOnlyDevice, data, &resp.Diagnostics, r.client)
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Updating the device model failed", err.Error(),
+			fmt.Sprintf("Updating the device model failed %s", data.Sn_or_name.String()), err.Error(),
 		)
 		return
 	}
@@ -220,6 +220,11 @@ func (r *DeviceResource) Read(ctx context.Context, req resource.ReadRequest, res
 	id, _ := strconv.Atoi(data.ID.ValueString())
 	device, _, err := GetDevice(r.client, &resp.Diagnostics, int32(id))
 	if err != nil {
+		// add diagnostic error with the expected ID
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Error reading device %d", id),
+			fmt.Sprintf("Could not read device %d, unexpected error. Error %s", id, err.Error()),
+		)
 		return
 	}
 
@@ -231,7 +236,7 @@ func (r *DeviceResource) Read(ctx context.Context, req resource.ReadRequest, res
 		data.Sn_or_name = types.StringNull()
 	}
 	data.Source = types.StringValue(string(device.GetSource()))
-    if device.GetSource() != "" {
+	if device.GetSource() != "" {
 		data.Source = types.StringValue(string(device.GetSource()))
 	} else {
 		data.Source = types.StringNull()
@@ -295,12 +300,19 @@ func (r *DeviceResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	if data.Source.ValueString() != "TERRAFORM" {
-	    writeOnlyDevice.SetSource(hwmux.TERRAFORM)
+		writeOnlyDevice.SetSource(hwmux.TERRAFORM)
 	}
 
 	// update device
 	id, _ := strconv.Atoi(data.ID.ValueString())
 	writeOnlyDevice, httpRes, err := r.client.DevicesApi.DevicesUpdate(context.Background(), int32(id)).WriteOnlyDevice(*writeOnlyDevice).Execute()
+
+	if err != nil {
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Error updating device %d", id), fmt.Sprintf("Could not update device %d, unexpected error. Error %s \n Response body %s", id, err.Error(), BodyToString(&httpRes.Body)),
+		)
+		return
+	}
 
 	// Handle the online field, which is remapped to status
 	//  will only make a change if there is a difference between the API-provided value and the desired one
@@ -318,14 +330,6 @@ func (r *DeviceResource) Update(ctx context.Context, req resource.UpdateRequest,
 
 		writeOnlyDevice.SetOnline(data.Online.ValueBool())
 		writeOnlyDevice.SetStatus(statusReq.Status)
-	}
-
-	if err != nil {
-		resp.Diagnostics.AddError(
-			"Error updating device "+data.ID.String(),
-			"Could not update device, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
-		)
-		return
 	}
 
 	// set model based on response
@@ -404,11 +408,15 @@ func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnosti
 	if !plan.Is_wstk.IsUnknown() {
 		writeOnlyDevice.SetIsWstk(plan.Is_wstk.ValueBool())
 	}
-	if !plan.Sn_or_name.IsUnknown() {
+	if plan.Sn_or_name.IsUnknown() {
+		writeOnlyDevice.SetSnOrNameNil()
+	} else {
 		sn_or_name := plan.Sn_or_name.ValueString()
 		writeOnlyDevice.SnOrName.Set(&sn_or_name)
 	}
-	if !plan.Uri.IsUnknown() {
+	if plan.Uri.IsUnknown() {
+		writeOnlyDevice.SetUriNil()
+	} else {
 		writeOnlyDevice.SetUri(plan.Uri.ValueString())
 	}
 	if !plan.Metadata.IsUnknown() {
@@ -438,7 +446,6 @@ func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnosti
 
 	writeOnlyDevice.SetPermissionGroups(permissionList)
 
-
 	return writeOnlyDevice, nil
 }
 
@@ -453,7 +460,7 @@ func updateDeviceModelFromResponse(device *hwmux.WriteOnlyDevice, plan *DeviceRe
 		plan.Sn_or_name = types.StringNull()
 	}
 	plan.Source = types.StringValue(string(device.GetSource()))
-    if device.GetSource() != "" {
+	if device.GetSource() != "" {
 		plan.Source = types.StringValue(string(device.GetSource()))
 	} else {
 		plan.Source = types.StringNull()

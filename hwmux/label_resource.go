@@ -89,9 +89,9 @@ func (r *LabelResource) Schema(ctx context.Context, req resource.SchemaRequest, 
 				Computed:    true,
 			},
 			"source": schema.StringAttribute{
-                Description: "The source where the label was created.",
-                Computed:    true,
-            },
+				Description: "The source where the label was created.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -139,8 +139,8 @@ func (r *LabelResource) Create(ctx context.Context, req resource.CreateRequest, 
 
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error creating label",
-			"Could not create label, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
+			fmt.Sprintf("Error creating label %s", data.Name.String()),
+			fmt.Sprintf("Could not create label %s, unexpected error: %s\n%s", data.Name.String(), err.Error(), BodyToString(&httpRes.Body)),
 		)
 		return
 	}
@@ -173,13 +173,18 @@ func (r *LabelResource) Read(ctx context.Context, req resource.ReadRequest, resp
 	id, _ := strconv.Atoi(data.ID.ValueString())
 	label, _, err := GetLabel(r.client, &resp.Diagnostics, int32(id))
 	if err != nil {
+		// add diagnostic message with the expected ID
+		resp.Diagnostics.AddError(
+			fmt.Sprintf("Error reading label %d", id),
+			fmt.Sprintf("Could not read label %d, unexpected error: %s", id, err.Error()),
+		)
 		return
 	}
 
 	// Map response body to model
 	data.ID = types.StringValue(strconv.Itoa(int(label.GetId())))
 	data.Name = types.StringValue(label.GetName())
-    data.Source = types.StringValue(string(label.GetSource()))
+	data.Source = types.StringValue(string(label.GetSource()))
 
 	err = MarshalMetadataSetError(label.GetMetadata(), &resp.Diagnostics, "label", &data.Metadata)
 	if err != nil {
@@ -219,8 +224,8 @@ func (r *LabelResource) Update(ctx context.Context, req resource.UpdateRequest, 
 		return
 	}
 
-    if data.Source.ValueString() != "TERRAFORM" {
-	    labelSerializer.SetSource(hwmux.TERRAFORM)
+	if data.Source.ValueString() != "TERRAFORM" {
+		labelSerializer.SetSource(hwmux.TERRAFORM)
 	}
 
 	// update label
@@ -230,7 +235,7 @@ func (r *LabelResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	if err != nil {
 		resp.Diagnostics.AddError(
 			"Error updating label "+data.ID.String(),
-			"Could not update label, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
+			fmt.Sprintf("Could not update label %d, unexpected error: %s\n%s", id, err.Error(), BodyToString(&httpRes.Body)),
 		)
 		return
 	}
@@ -263,8 +268,8 @@ func (r *LabelResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	httpRes, err := r.client.LabelsApi.LabelsDestroy(context.Background(), int32(id)).Execute()
 	if err != nil {
 		resp.Diagnostics.AddError(
-			"Error Deleting Label",
-			"Could not delete label, unexpected error: "+BodyToString(&httpRes.Body),
+			fmt.Sprintf("Error deleting label %d", id),
+			fmt.Sprintf("Could not delete label %d, unexpected error: %s\n%s", id, err.Error(), BodyToString(&httpRes.Body)),
 		)
 		return
 	}
@@ -278,7 +283,7 @@ func (r *LabelResource) ImportState(ctx context.Context, req resource.ImportStat
 func createLabelFromPlan(plan *LabelResourceModel, diagnostics *diag.Diagnostics) (*hwmux.LabelSerializerWithPermissions, error) {
 	labelSerializer := hwmux.NewLabelSerializerWithPermissionsWithDefaults()
 	labelSerializer.SetName(plan.Name.ValueString())
-    labelSerializer.SetSource(hwmux.TERRAFORM)
+	labelSerializer.SetSource(hwmux.TERRAFORM)
 
 	if !plan.Metadata.IsUnknown() {
 		metadata, errorMet := UnmarshalMetadataSetError(plan.Metadata.ValueString(), diagnostics, "label")
@@ -310,7 +315,7 @@ func updateLabelModelFromResponse(label *hwmux.LabelSerializerWithPermissions, p
 	// Map response body to schema and populate Computed attribute values
 	plan.ID = types.StringValue(strconv.Itoa(int(label.GetId())))
 	plan.Name = types.StringValue(label.GetName())
-    plan.Source = types.StringValue(string(label.GetSource()))
+	plan.Source = types.StringValue(string(label.GetSource()))
 
 	err = MarshalMetadataSetError(label.GetMetadata(), diagnostics, "label", &plan.Metadata)
 	if err != nil {

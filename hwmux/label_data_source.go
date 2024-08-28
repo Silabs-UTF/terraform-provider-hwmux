@@ -57,10 +57,10 @@ func (d *LabelDataSource) Schema(ctx context.Context, req datasource.SchemaReque
 				MarkdownDescription: "The metadata of the Label.",
 				Computed:            true,
 			},
-            "source": schema.StringAttribute{
-                MarkdownDescription: "The source where the label was created.",
-                Computed:            true,
-            },
+			"source": schema.StringAttribute{
+				MarkdownDescription: "The source where the label was created.",
+				Computed:            true,
+			},
 			"device_groups": schema.ListNestedAttribute{
 				MarkdownDescription: "The Device Groups that belong to the Label",
 				Computed:            true,
