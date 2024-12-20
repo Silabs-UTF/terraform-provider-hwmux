@@ -299,7 +299,7 @@ func (r *DeviceGroupResource) ImportState(ctx context.Context, req resource.Impo
 func createDeviceGroupFromPlan(plan *DeviceGroupResourceModel, diagnostics *diag.Diagnostics) (*hwmux.DeviceGroupSerializerWithDevicePk, error) {
 	deviceGroupSerializer := hwmux.NewDeviceGroupSerializerWithDevicePkWithDefaults()
 	deviceGroupSerializer.SetName(plan.Name.ValueString())
-	deviceGroupSerializer.SetSource(hwmux.TERRAFORM)
+	deviceGroupSerializer.SetSource(hwmux.SOURCEENUM_TERRAFORM)
 	if !plan.Enable_ahs.IsUnknown() {
 		deviceGroupSerializer.SetEnableAhs(plan.Enable_ahs.ValueBool())
 	}

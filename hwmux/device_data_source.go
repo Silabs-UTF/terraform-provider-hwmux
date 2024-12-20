@@ -23,15 +23,16 @@ type DeviceDataSource struct {
 
 // deviceDataSourceModel maps the data source schema data.
 type DeviceDataSourceModel struct {
-	ID         types.Int64  `tfsdk:"id"`
-	Sn_or_name types.String `tfsdk:"sn_or_name"`
-	Is_wstk    types.Bool   `tfsdk:"is_wstk"`
-	Uri        types.String `tfsdk:"uri"`
-	Online     types.Bool   `tfsdk:"online"`
-	Metadata   types.String `tfsdk:"metadata"`
-	Part       types.String `tfsdk:"part"`
-	Wstk_part  types.String `tfsdk:"wstk_part"`
-	Source     types.String `tfsdk:"source"`
+	ID            types.Int64  `tfsdk:"id"`
+	Sn_or_name    types.String `tfsdk:"sn_or_name"`
+	Is_wstk       types.Bool   `tfsdk:"is_wstk"`
+	Uri           types.String `tfsdk:"uri"`
+	Online        types.Bool   `tfsdk:"online"`
+	Metadata      types.String `tfsdk:"metadata"`
+	Part          types.String `tfsdk:"part"`
+	Wstk_part     types.String `tfsdk:"wstk_part"`
+	Source        types.String `tfsdk:"source"`
+	Socketed_chip types.String `tfsdk:"socketed_chip"`
 }
 
 func (d *DeviceDataSource) Metadata(ctx context.Context, req datasource.MetadataRequest, resp *datasource.MetadataResponse) {
@@ -80,6 +81,10 @@ func (d *DeviceDataSource) Schema(ctx context.Context, req datasource.SchemaRequ
 				Description: "The source where the device was created.",
 				Computed:    true,
 			},
+			"socketed_chip": schema.StringAttribute{
+				Description: "The socket chip detail of the device.",
+				Computed:    true,
+			},
 		},
 	}
 }
@@ -125,6 +130,7 @@ func (d *DeviceDataSource) Read(ctx context.Context, req datasource.ReadRequest,
 	data.Uri = types.StringValue(device.GetUri())
 	data.Online = types.BoolValue(device.GetOnline())
 	data.Source = types.StringValue(string(device.GetSource()))
+	data.Socketed_chip = types.StringValue(device.GetSocketedChip())
 
 	err = MarshalMetadataSetError(device.GetMetadata(), &resp.Diagnostics, "device", &data.Metadata)
 	if err != nil {
