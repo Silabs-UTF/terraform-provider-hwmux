@@ -19,6 +19,7 @@ resource "hwmux_device" "test" {
     part = "Part_no_0"
     room = "Room_0"
     permission_groups = ["Staff users"]
+	socketed_chip = "BRD1019A001"
 }
 `,
 				Check: resource.ComposeAggregateTestCheckFunc(
@@ -34,6 +35,7 @@ resource "hwmux_device" "test" {
 					resource.TestCheckResourceAttr("hwmux_device.test", "metadata", "{}"),
 					resource.TestCheckResourceAttr("hwmux_device.test", "location_metadata", "{}"),
 					resource.TestCheckResourceAttr("hwmux_device.test", "source", "TERRAFORM"),
+					resource.TestCheckResourceAttr("hwmux_device.test", "socketed_chip", "BRD1019A001"),
 					// Verify dynamic values have any value set in the state.
 					resource.TestCheckResourceAttrSet("hwmux_device.test", "id"),
 					resource.TestCheckResourceAttrSet("hwmux_device.test", "last_updated"),
@@ -57,6 +59,7 @@ resource "hwmux_device" "test" {
 	part = "Part_no_0"
 	room = "Room_0"
 	online = false
+	socketed_chip = "BRD1019A002"
     permission_groups = ["All users"]
 }
 `,
@@ -74,6 +77,7 @@ resource "hwmux_device" "test" {
 					resource.TestCheckResourceAttr("hwmux_device.test", "metadata", "{}"),
 					resource.TestCheckResourceAttr("hwmux_device.test", "location_metadata", "{}"),
 					resource.TestCheckResourceAttr("hwmux_device.test", "source", "TERRAFORM"),
+					resource.TestCheckResourceAttr("hwmux_device.test", "socketed_chip", "BRD1019A002"),
 				),
 			},
 			// (Delete testing automatically occurs in TestCase)
@@ -110,6 +114,8 @@ resource "hwmux_device" "test" {
 					resource.TestCheckResourceAttrSet("hwmux_device.test", "id"),
 					resource.TestCheckResourceAttrSet("hwmux_device.test", "last_updated"),
 					resource.TestCheckResourceAttr("hwmux_device.test", "source", "TERRAFORM"),
+					// Verify if optional field is set to default
+					resource.TestCheckResourceAttr("hwmux_device.test", "socketed_chip", ""),
 				),
 			},
 			// ImportState testing
