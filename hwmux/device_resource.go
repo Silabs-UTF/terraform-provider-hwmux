@@ -129,8 +129,8 @@ func (r *DeviceResource) Schema(ctx context.Context, req resource.SchemaRequest,
 				Computed:    true,
 			},
 			"socketed_chip": schema.StringAttribute{
-				Description: "The socket chip detail of the device.",
-				Computed:    true,
+				MarkdownDescription: "The socket chip detail of the device.",
+				Optional:            true,
 			},
 		},
 	}
