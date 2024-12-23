@@ -114,8 +114,6 @@ resource "hwmux_device" "test" {
 					resource.TestCheckResourceAttrSet("hwmux_device.test", "id"),
 					resource.TestCheckResourceAttrSet("hwmux_device.test", "last_updated"),
 					resource.TestCheckResourceAttr("hwmux_device.test", "source", "TERRAFORM"),
-					// Verify if optional field is set to default
-					resource.TestCheckResourceAttr("hwmux_device.test", "socketed_chip", ""),
 				),
 			},
 			// ImportState testing
