@@ -131,6 +131,10 @@ func (r *DeviceResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			"socketed_chip": schema.StringAttribute{
 				MarkdownDescription: "The socket chip detail of the device.",
 				Optional:            true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					stringvalidator.LengthAtMost(255),
+				},
 			},
 		},
 	}
