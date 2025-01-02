@@ -26,6 +26,7 @@ Device data source
 - `online` (Boolean) If the device is online.
 - `part` (String) The part number of the device.
 - `sn_or_name` (String) Device name. Must be unique.
+- `socketed_chip` (String) The socket chip detail of the device.
 - `source` (String) The source where the device was created.
 - `uri` (String) The URI or IP address of the device.
 - `wstk_part` (String) The part number of the wstk the device is on.

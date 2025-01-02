@@ -225,7 +225,7 @@ func (r *LabelResource) Update(ctx context.Context, req resource.UpdateRequest, 
 	}
 
 	if data.Source.ValueString() != "TERRAFORM" {
-		labelSerializer.SetSource(hwmux.TERRAFORM)
+		labelSerializer.SetSource(hwmux.SOURCEENUM_TERRAFORM)
 	}
 
 	// update label
@@ -283,7 +283,7 @@ func (r *LabelResource) ImportState(ctx context.Context, req resource.ImportStat
 func createLabelFromPlan(plan *LabelResourceModel, diagnostics *diag.Diagnostics) (*hwmux.LabelSerializerWithPermissions, error) {
 	labelSerializer := hwmux.NewLabelSerializerWithPermissionsWithDefaults()
 	labelSerializer.SetName(plan.Name.ValueString())
-	labelSerializer.SetSource(hwmux.TERRAFORM)
+	labelSerializer.SetSource(hwmux.SOURCEENUM_TERRAFORM)
 
 	if !plan.Metadata.IsUnknown() {
 		metadata, errorMet := UnmarshalMetadataSetError(plan.Metadata.ValueString(), diagnostics, "label")

@@ -23,6 +23,7 @@ func TestAccDeviceDataSource(t *testing.T) {
 					resource.TestCheckResourceAttr("data.hwmux_device.test", "part", "Part_no_0"),
 					resource.TestCheckResourceAttr("data.hwmux_device.test", "uri", "0"),
 					resource.TestCheckResourceAttr("data.hwmux_device.test", "source", "TERRAFORM"),
+					resource.TestCheckResourceAttr("data.hwmux_device.test", "socketed_chip", ""),
 				),
 			},
 		},

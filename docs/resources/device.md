@@ -41,6 +41,7 @@ resource "hwmux_device" "example" {
 - `metadata` (String) The metadata of the device.
 - `online` (Boolean) If the device is online.
 - `sn_or_name` (String) Device name.
+- `socketed_chip` (String) The socket chip detail of the device.
 - `uri` (String) The URI or IP address of the device.
 - `wstk_part` (String) The part number of the WSTK the device is on.
 

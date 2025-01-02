@@ -46,6 +46,7 @@ type DeviceResourceModel struct {
 	PermissionGroups []types.String `tfsdk:"permission_groups"`
 	LastUpdated      types.String   `tfsdk:"last_updated"`
 	Source           types.String   `tfsdk:"source"`
+	Socketed_chip    types.String   `tfsdk:"socketed_chip"`
 }
 
 func (r *DeviceResource) Metadata(ctx context.Context, req resource.MetadataRequest, resp *resource.MetadataResponse) {
@@ -126,6 +127,14 @@ func (r *DeviceResource) Schema(ctx context.Context, req resource.SchemaRequest,
 			"source": schema.StringAttribute{
 				Description: "The source where the device was created.",
 				Computed:    true,
+			},
+			"socketed_chip": schema.StringAttribute{
+				MarkdownDescription: "The socket chip detail of the device.",
+				Optional:            true,
+				Validators: []validator.String{
+					stringvalidator.LengthAtLeast(1),
+					stringvalidator.LengthAtMost(255),
+				},
 			},
 		},
 	}
@@ -252,6 +261,11 @@ func (r *DeviceResource) Read(ctx context.Context, req resource.ReadRequest, res
 	} else {
 		data.Uri = types.StringNull()
 	}
+	if device.GetSocketedChip() != "" {
+		data.Socketed_chip = types.StringValue(string(device.GetSocketedChip()))
+	} else {
+		data.Socketed_chip = types.StringNull()
+	}
 	data.Online = types.BoolValue(device.GetOnline())
 
 	location, _, err := GetDeviceLocation(r.client, &resp.Diagnostics, device.GetId())
@@ -300,7 +314,7 @@ func (r *DeviceResource) Update(ctx context.Context, req resource.UpdateRequest,
 	}
 
 	if data.Source.ValueString() != "TERRAFORM" {
-		writeOnlyDevice.SetSource(hwmux.TERRAFORM)
+		writeOnlyDevice.SetSource(hwmux.SOURCEENUM_TERRAFORM)
 	}
 
 	// update device
@@ -399,7 +413,7 @@ func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnosti
 	writeOnlyDevice := hwmux.NewWriteOnlyDeviceWithDefaults()
 
 	writeOnlyDevice.SetPart(plan.Part.ValueString())
-	writeOnlyDevice.SetSource(hwmux.TERRAFORM)
+	writeOnlyDevice.SetSource(hwmux.SOURCEENUM_TERRAFORM)
 
 	if !plan.Wstk_part.IsUnknown() {
 		writeOnlyDevice.SetWstkPart(plan.Wstk_part.ValueString())
@@ -425,6 +439,12 @@ func createDeviceFromPlan(plan *DeviceResourceModel, diagnostics *diag.Diagnosti
 			return nil, errorMet
 		}
 		writeOnlyDevice.SetMetadata(*metadata)
+	}
+	if plan.Socketed_chip.IsUnknown() {
+		writeOnlyDevice.SetSocketedChip("")
+	} else {
+		socketed_chip := plan.Socketed_chip.ValueString()
+		writeOnlyDevice.SetSocketedChip(socketed_chip)
 	}
 
 	location := hwmux.NewLocationSerializerWriteOnlyWithDefaults()
@@ -490,6 +510,12 @@ func updateDeviceModelFromResponse(device *hwmux.WriteOnlyDevice, plan *DeviceRe
 		plan.Wstk_part = types.StringValue(device.GetWstkPart())
 	} else {
 		plan.Wstk_part = types.StringNull()
+	}
+
+	if device.GetSocketedChip() != "" {
+		plan.Socketed_chip = types.StringValue(string(device.GetSocketedChip()))
+	} else {
+		plan.Socketed_chip = types.StringNull()
 	}
 
 	permissionGroups, err := GetPermissionGroupsForDevice(client, diagnostics, device.GetId())
