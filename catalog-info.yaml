@@ -1,7 +1,7 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  namespace: infra-sw
+  namespace: default
   name: hwmux-terraform-provider
   title: Hwmux Terraform Provider
   description: Hwmux terraform provider for resource definitions
@@ -12,7 +12,7 @@ metadata:
 spec:
   type: library
   lifecycle: production
-  owner: group:infrasw-fs
+  owner: group:sg.infrasw_fs_dev
   system: hwmux
   dependsOn:
-    - component:infra-sw/hwmux-clinet-golang
+    - component:default/hwmux-clinet-golang
