@@ -35,26 +35,20 @@ func isReservationBlockedDeleteError(httpRes *http.Response, body string) bool {
 		return false
 	}
 
-	bodyLower := strings.ToLower(body)
+	bodyLower := strings.ToLower(strings.TrimSpace(body))
 	if bodyLower == "" {
 		return false
 	}
 
-	reservationFragments := []string{
-		"reservation",
-		"active reservations",
-		"queued reservations",
-		"in use",
-		"cannot be deleted",
-	}
+	// Avoid false-positives: require both a reservation signal and a delete-blocking phrase.
+	hasReservation := strings.Contains(bodyLower, "reservation")
+	hasDeleteBlock := strings.Contains(bodyLower, "cannot be deleted") ||
+		strings.Contains(bodyLower, "in use") ||
+		strings.Contains(bodyLower, "active reservations") ||
+		strings.Contains(bodyLower, "queued reservations")
 
-	for _, fragment := range reservationFragments {
-		if strings.Contains(bodyLower, fragment) {
-			return true
-		}
-	}
+	return hasReservation && hasDeleteBlock
 
-	return false
 }
 
 // Get device, err and set error
