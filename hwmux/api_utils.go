@@ -3,11 +3,32 @@ package hwmux
 import (
 	"context"
 	"net/http"
+	"strings"
 	"strconv"
 
 	"github.com/Silabs-UTF/hwmux-client-golang/v2"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
+
+func hasHTTPStatusAndBodyContains(httpRes *http.Response, body string, statusCode int, expectedMessage string) bool {
+	if httpRes == nil || httpRes.StatusCode != statusCode {
+		return false
+	}
+
+	if body == "" {
+		return false
+	}
+
+	return strings.Contains(strings.ToLower(body), strings.ToLower(expectedMessage))
+}
+
+func isDeviceAlreadyActiveStatusError(httpRes *http.Response, body string) bool {
+	return hasHTTPStatusAndBodyContains(httpRes, body, http.StatusBadRequest, "already has status active")
+}
+
+func isLabelInUseDeleteError(httpRes *http.Response, body string) bool {
+	return hasHTTPStatusAndBodyContains(httpRes, body, http.StatusBadRequest, "label is in use and cannot be deleted")
+}
 
 // Get device, err and set error
 func GetDevice(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (

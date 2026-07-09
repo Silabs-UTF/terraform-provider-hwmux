@@ -372,7 +372,10 @@ func (r *DeviceResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	// if it's offline, set it back online to remove the reservation for the offline status
 	if !data.Online.ValueBool() {
 		id, _ := strconv.Atoi(data.ID.ValueString())
-		r.setDeviceStatusFromPlan(&resp.Diagnostics, int32(id), hwmux.ACTIVE)
+		_, statusErr := r.setDeviceStatusFromPlan(&resp.Diagnostics, int32(id), hwmux.ACTIVE)
+		if statusErr != nil {
+			return
+		}
 	}
 
 	// Delete existing
@@ -399,9 +402,18 @@ func (r *DeviceResource) setDeviceStatusFromPlan(diagnostics *diag.Diagnostics, 
 
 	resourceStatRequest, httpRes, err := r.client.DevicesApi.DevicesStatusCreate(context.Background(), id).ResourceStatusRequest(*statusRequest).Execute()
 	if err != nil {
+		responseBody := ""
+		if httpRes != nil {
+			responseBody = BodyToString(&httpRes.Body)
+		}
+
+		if isDeviceAlreadyActiveStatusError(httpRes, responseBody) {
+			return resourceStatRequest, nil
+		}
+
 		diagnostics.AddError(
 			"Error setting device status "+strconv.Itoa(int(id)),
-			"Could not update device, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
+			"Could not update device, unexpected error: "+err.Error()+"\n"+responseBody,
 		)
 		return resourceStatRequest, err
 	}
