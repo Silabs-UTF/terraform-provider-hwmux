@@ -137,7 +137,7 @@ func TestIsReservationBlockedDeleteError(t *testing.T) {
 		{
 			name:     "matches case-insensitive wording",
 			httpRes:  &http.Response{StatusCode: http.StatusBadRequest},
-			body:     "RESOURCE IS IN USE AND CANNOT BE DELETED",
+			body:     "DEVICE HAS ACTIVE RESERVATIONS AND CANNOT BE DELETED",
 			expected: true,
 		},
 		{

@@ -3,8 +3,8 @@ package hwmux
 import (
 	"context"
 	"net/http"
-	"strings"
 	"strconv"
+	"strings"
 
 	"github.com/Silabs-UTF/hwmux-client-golang/v2"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
