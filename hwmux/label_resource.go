@@ -275,7 +275,7 @@ func (r *LabelResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 		if isLabelInUseDeleteError(httpRes, responseBody) {
 			resp.Diagnostics.AddError(
 				"Label cannot be deleted while reservations are active",
-				fmt.Sprintf("Could not delete label %d because it is attached to active or queued reservations. Cancel or complete those reservations first, then re-run terraform destroy.\n%s", id, responseBody),
+				fmt.Sprintf("Could not delete label %d because it is attached to active or queued reservations. Cancel or complete those reservations first, then re-run terraform destroy.%s", id, responseBody),
 			)
 			return
 		}

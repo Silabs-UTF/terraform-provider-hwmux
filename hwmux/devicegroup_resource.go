@@ -292,7 +292,7 @@ func (r *DeviceGroupResource) Delete(ctx context.Context, req resource.DeleteReq
 		if isReservationBlockedDeleteError(httpRes, responseBody) {
 			resp.Diagnostics.AddError(
 				"Device group cannot be deleted while reservations are active",
-				fmt.Sprintf("Could not delete deviceGroup %d because it has active or queued reservations. Cancel or complete those reservations first, then re-run terraform destroy.\n%s", id, responseBody),
+				fmt.Sprintf("Could not delete deviceGroup %d because it has active or queued reservations. Cancel or complete those reservations first, then re-run terraform destroy.%s", id, responseBody),
 			)
 			return
 		}
