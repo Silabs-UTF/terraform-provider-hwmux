@@ -284,9 +284,22 @@ func (r *DeviceGroupResource) Delete(ctx context.Context, req resource.DeleteReq
 	id, _ := strconv.Atoi(data.ID.ValueString())
 	httpRes, err := r.client.GroupsApi.GroupsDestroy(context.Background(), int32(id)).Execute()
 	if err != nil {
+		responseBody := ""
+		if httpRes != nil {
+			responseBody = BodyToString(&httpRes.Body)
+		}
+
+		if isReservationBlockedDeleteError(httpRes, responseBody) {
+			resp.Diagnostics.AddError(
+				"Device group cannot be deleted while reservations are active",
+				fmt.Sprintf("Could not delete deviceGroup %d because it has active or queued reservations. Cancel or complete those reservations first, then re-run terraform destroy.\n%s", id, responseBody),
+			)
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Error deleting deviceGroup %s", data.ID.String()),
-			fmt.Sprintf("Could not delete deviceGroup %s, unexpected error: %s\n%s", data.ID.String(), err.Error(), BodyToString(&httpRes.Body)),
+			fmt.Sprintf("Could not delete deviceGroup %s, unexpected error: %s\n%s", data.ID.String(), err.Error(), responseBody),
 		)
 		return
 	}

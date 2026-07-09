@@ -114,3 +114,64 @@ func TestIsLabelInUseDeleteError(t *testing.T) {
 		})
 	}
 }
+
+func TestIsReservationBlockedDeleteError(t *testing.T) {
+	tests := []struct {
+		name     string
+		httpRes  *http.Response
+		body     string
+		expected bool
+	}{
+		{
+			name:     "matches active reservations wording",
+			httpRes:  &http.Response{StatusCode: http.StatusBadRequest},
+			body:     "Device has active reservations and cannot be deleted",
+			expected: true,
+		},
+		{
+			name:     "matches queued reservations wording",
+			httpRes:  &http.Response{StatusCode: http.StatusBadRequest},
+			body:     "Device group has queued reservations",
+			expected: true,
+		},
+		{
+			name:     "matches case-insensitive wording",
+			httpRes:  &http.Response{StatusCode: http.StatusBadRequest},
+			body:     "RESOURCE IS IN USE AND CANNOT BE DELETED",
+			expected: true,
+		},
+		{
+			name:     "does not match unrelated 400",
+			httpRes:  &http.Response{StatusCode: http.StatusBadRequest},
+			body:     "Invalid device id",
+			expected: false,
+		},
+		{
+			name:     "does not match non-400",
+			httpRes:  &http.Response{StatusCode: http.StatusConflict},
+			body:     "active reservations",
+			expected: false,
+		},
+		{
+			name:     "does not match nil response",
+			httpRes:  nil,
+			body:     "active reservations",
+			expected: false,
+		},
+		{
+			name:     "does not match empty body",
+			httpRes:  &http.Response{StatusCode: http.StatusBadRequest},
+			body:     "",
+			expected: false,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			got := isReservationBlockedDeleteError(tt.httpRes, tt.body)
+			if got != tt.expected {
+				t.Fatalf("expected %v, got %v", tt.expected, got)
+			}
+		})
+	}
+}

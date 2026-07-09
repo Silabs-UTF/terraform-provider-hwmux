@@ -30,6 +30,33 @@ func isLabelInUseDeleteError(httpRes *http.Response, body string) bool {
 	return hasHTTPStatusAndBodyContains(httpRes, body, http.StatusBadRequest, "label is in use and cannot be deleted")
 }
 
+func isReservationBlockedDeleteError(httpRes *http.Response, body string) bool {
+	if httpRes == nil || httpRes.StatusCode != http.StatusBadRequest {
+		return false
+	}
+
+	bodyLower := strings.ToLower(body)
+	if bodyLower == "" {
+		return false
+	}
+
+	reservationFragments := []string{
+		"reservation",
+		"active reservations",
+		"queued reservations",
+		"in use",
+		"cannot be deleted",
+	}
+
+	for _, fragment := range reservationFragments {
+		if strings.Contains(bodyLower, fragment) {
+			return true
+		}
+	}
+
+	return false
+}
+
 // Get device, err and set error
 func GetDevice(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (
 	device *hwmux.DeviceSerializerPublic, httpRes *http.Response, err error) {

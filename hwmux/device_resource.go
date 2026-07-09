@@ -382,9 +382,22 @@ func (r *DeviceResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	id, _ := strconv.Atoi(data.ID.ValueString())
 	httpRes, err := r.client.DevicesApi.DevicesDestroy(context.Background(), int32(id)).Execute()
 	if err != nil {
+		responseBody := ""
+		if httpRes != nil {
+			responseBody = BodyToString(&httpRes.Body)
+		}
+
+		if isReservationBlockedDeleteError(httpRes, responseBody) {
+			resp.Diagnostics.AddError(
+				"Device cannot be deleted while reservations are active",
+				"Could not delete device because it has active or queued reservations. Cancel or complete those reservations first, then re-run terraform destroy.\n"+responseBody,
+			)
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Error Deleting Device",
-			"Could not delete device, unexpected error: "+BodyToString(&httpRes.Body),
+			"Could not delete device, unexpected error: "+responseBody,
 		)
 		return
 	}
