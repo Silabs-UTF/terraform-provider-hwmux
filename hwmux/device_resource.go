@@ -390,7 +390,7 @@ func (r *DeviceResource) Delete(ctx context.Context, req resource.DeleteRequest,
 		if isReservationBlockedDeleteError(httpRes, responseBody) {
 			resp.Diagnostics.AddError(
 				"Device cannot be deleted while reservations are active",
-				"Could not delete device because it has active or queued reservations. Cancel or complete those reservations first, then re-run terraform destroy.\n"+responseBody,
+				"Could not delete device because it has active or queued reservations. Cancel or complete those reservations first, then re-run terraform destroy."+responseBody,
 			)
 			return
 		}
