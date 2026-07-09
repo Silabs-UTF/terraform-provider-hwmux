@@ -48,7 +48,6 @@ func isReservationBlockedDeleteError(httpRes *http.Response, body string) bool {
 		strings.Contains(bodyLower, "queued reservations")
 
 	return hasReservation && hasDeleteBlock
-
 }
 
 // Get device, err and set error
