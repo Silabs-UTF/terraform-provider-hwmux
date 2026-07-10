@@ -372,16 +372,32 @@ func (r *DeviceResource) Delete(ctx context.Context, req resource.DeleteRequest,
 	// if it's offline, set it back online to remove the reservation for the offline status
 	if !data.Online.ValueBool() {
 		id, _ := strconv.Atoi(data.ID.ValueString())
-		r.setDeviceStatusFromPlan(&resp.Diagnostics, int32(id), hwmux.ACTIVE)
+		_, statusErr := r.setDeviceStatusFromPlan(&resp.Diagnostics, int32(id), hwmux.ACTIVE)
+		if statusErr != nil {
+			return
+		}
 	}
 
 	// Delete existing
 	id, _ := strconv.Atoi(data.ID.ValueString())
 	httpRes, err := r.client.DevicesApi.DevicesDestroy(context.Background(), int32(id)).Execute()
 	if err != nil {
+		responseBody := ""
+		if httpRes != nil {
+			responseBody = BodyToString(&httpRes.Body)
+		}
+
+		if isReservationBlockedDeleteError(httpRes, responseBody) {
+			resp.Diagnostics.AddError(
+				"Device cannot be deleted while reservations are active",
+				"Could not delete device because it has active or queued reservations. Cancel or complete those reservations first, then re-run terraform destroy."+responseBody,
+			)
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			"Error Deleting Device",
-			"Could not delete device, unexpected error: "+BodyToString(&httpRes.Body),
+			"Could not delete device, unexpected error: "+responseBody,
 		)
 		return
 	}
@@ -399,9 +415,18 @@ func (r *DeviceResource) setDeviceStatusFromPlan(diagnostics *diag.Diagnostics, 
 
 	resourceStatRequest, httpRes, err := r.client.DevicesApi.DevicesStatusCreate(context.Background(), id).ResourceStatusRequest(*statusRequest).Execute()
 	if err != nil {
+		responseBody := ""
+		if httpRes != nil {
+			responseBody = BodyToString(&httpRes.Body)
+		}
+
+		if isDeviceAlreadyActiveStatusError(httpRes, responseBody) {
+			return resourceStatRequest, nil
+		}
+
 		diagnostics.AddError(
 			"Error setting device status "+strconv.Itoa(int(id)),
-			"Could not update device, unexpected error: "+err.Error()+"\n"+BodyToString(&httpRes.Body),
+			"Could not update device, unexpected error: "+err.Error()+"\n"+responseBody,
 		)
 		return resourceStatRequest, err
 	}

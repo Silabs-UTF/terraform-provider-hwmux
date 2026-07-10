@@ -4,10 +4,51 @@ import (
 	"context"
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/Silabs-UTF/hwmux-client-golang/v2"
 	"github.com/hashicorp/terraform-plugin-framework/diag"
 )
+
+func hasHTTPStatusAndBodyContains(httpRes *http.Response, body string, statusCode int, expectedMessage string) bool {
+	if httpRes == nil || httpRes.StatusCode != statusCode {
+		return false
+	}
+
+	if body == "" {
+		return false
+	}
+
+	return strings.Contains(strings.ToLower(body), strings.ToLower(expectedMessage))
+}
+
+func isDeviceAlreadyActiveStatusError(httpRes *http.Response, body string) bool {
+	return hasHTTPStatusAndBodyContains(httpRes, body, http.StatusBadRequest, "already has status active")
+}
+
+func isLabelInUseDeleteError(httpRes *http.Response, body string) bool {
+	return hasHTTPStatusAndBodyContains(httpRes, body, http.StatusBadRequest, "label is in use and cannot be deleted")
+}
+
+func isReservationBlockedDeleteError(httpRes *http.Response, body string) bool {
+	if httpRes == nil || httpRes.StatusCode != http.StatusBadRequest {
+		return false
+	}
+
+	bodyLower := strings.ToLower(strings.TrimSpace(body))
+	if bodyLower == "" {
+		return false
+	}
+
+	// Avoid false-positives: require both a reservation signal and a delete-blocking phrase.
+	hasReservation := strings.Contains(bodyLower, "reservation")
+	hasDeleteBlock := strings.Contains(bodyLower, "cannot be deleted") ||
+		strings.Contains(bodyLower, "in use") ||
+		strings.Contains(bodyLower, "active reservations") ||
+		strings.Contains(bodyLower, "queued reservations")
+
+	return hasReservation && hasDeleteBlock
+}
 
 // Get device, err and set error
 func GetDevice(client *hwmux.APIClient, diagnostics *diag.Diagnostics, id int32) (

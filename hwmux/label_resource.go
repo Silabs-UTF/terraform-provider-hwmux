@@ -267,9 +267,22 @@ func (r *LabelResource) Delete(ctx context.Context, req resource.DeleteRequest, 
 	id, _ := strconv.Atoi(data.ID.ValueString())
 	httpRes, err := r.client.LabelsApi.LabelsDestroy(context.Background(), int32(id)).Execute()
 	if err != nil {
+		responseBody := ""
+		if httpRes != nil {
+			responseBody = BodyToString(&httpRes.Body)
+		}
+
+		if isLabelInUseDeleteError(httpRes, responseBody) {
+			resp.Diagnostics.AddError(
+				"Label cannot be deleted while reservations are active",
+				fmt.Sprintf("Could not delete label %d because it is attached to active or queued reservations. Cancel or complete those reservations first, then re-run terraform destroy.%s", id, responseBody),
+			)
+			return
+		}
+
 		resp.Diagnostics.AddError(
 			fmt.Sprintf("Error deleting label %d", id),
-			fmt.Sprintf("Could not delete label %d, unexpected error: %s\n%s", id, err.Error(), BodyToString(&httpRes.Body)),
+			fmt.Sprintf("Could not delete label %d, unexpected error: %s\n%s", id, err.Error(), responseBody),
 		)
 		return
 	}
